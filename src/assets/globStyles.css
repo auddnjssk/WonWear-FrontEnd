@@ -1,0 +1,345 @@
+/* Google Fonts - Poppins */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
+
+:root {
+  --background: #ffffff;
+  --fixed-header-height: 56px;
+  --fixed-header-mobile-height: 56px;
+}
+
+.glb-main-page{
+  flex: 0 0 85%;
+  width: 100%;
+  height: 100vh;
+}
+
+.glb-left {  
+  display: inline-block; 
+  height: 100vh; /* 부모 높이에 맞게 */
+  background-color: #ffffff;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+/* 컨텐츠 부분 */
+.glb-main-page .glb-content{
+  display: flex;
+  align-items : center;
+  justify-content : center;
+
+}
+.glb-main-page .glb-content .image-outerDiv{
+  height: calc(100vh - var(--fixed-header-height));
+}
+.glb-main-page .glb-content .image-outerDiv .ImageDiv{
+  height: 100vh;
+}
+.glb-main-page .glb-content .eqipTab{
+  height: calc(100vh - var(--fixed-header-height));
+  position: absolute;
+  right: 0;
+}
+
+.glb-fixed-header {
+  top: 0;
+  left: 0;
+  height: var(--fixed-header-height);
+  border-bottom: 1px solid #ccc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 10px;
+  z-index: 1000;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+  position: relative; /* 자식 요소의 절대 위치를 설정하기 위해 부모에 relative 설정 */
+}
+
+.glb-header-right-div{
+  right: 0;
+  display: flex;
+  position: absolute;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  margin-right: 10px;
+}
+.glb-header-right-div button{
+  width: 70px;
+  margin: 5px;
+}
+/* 버튼 부분 */
+.glb-button-small{
+  background-color: var(--navbar-dark-secondary);
+  height: 30px;
+  width: 50px;
+  border-radius: 12px;
+  margin: 10px;
+
+}
+.glb-button-100{
+  background-color: var(--navbar-dark-secondary);
+  height: 30px;
+  width: 100px;
+  border-radius: 12px;
+  margin: 10px;
+}
+.glb-button-70{
+  background-color: var(--navbar-dark-secondary);
+  height: 30px;
+  width: 70px;
+  border-radius: 12px;
+  margin: 10px;
+}
+
+.glb-button{
+  font-size: 14px;
+  height: 40px;
+}
+
+[class^="glb-button"] {
+  margin-top: 0px;
+  left: 1vw;
+  top: 1vw;
+  background: var(--navbar-dark-secondary);
+  border-radius: 12px;
+  flex-direction: column;
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+  overflow: hidden;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none;
+  color:  #ffffff;
+}
+
+[class^="glb-button"]:hover {
+  cursor: pointer; /* 마우스 오버 시 포인터 표시 */
+  background-color: #5684b1;
+}
+
+.paging-span{
+  padding: 5px;
+}
+.paging-span:hover{
+  cursor: pointer;
+  color: #5684b1;
+}
+
+.glb-contents {
+  padding: 10px;
+  height: auto;
+}
+.glb-headerY-contents{
+  height: auto;
+}
+
+.glb-titleCon {
+  display: flex;
+  align-items: center;
+  font-size: 35px;
+  width: 100%;
+  padding: 10px;
+}
+.glb-title {
+  width: 100%;
+}
+
+.glb-list-div{
+  padding: 10px;
+  width: 100%;
+  height: auto;
+}
+
+.glb-list-header{
+  display: flex;
+  font-weight: bold;
+  background-color: var(--navbar-dark-secondary);
+  padding: 5px;
+  color: #ffffff;
+  border-radius: 12px;
+}
+
+/* table */
+.glb-table-head{
+  border-radius: 12px;
+  background-color: var(--navbar-dark-secondary);
+  color: #ffffff;
+}
+
+.main-page {
+  flex: 0 0 85%;
+  width: 100%;
+  height: 100vh;
+}
+.main-page-center {
+  height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #ffffff;
+  -moz-column-gap: 30px;
+  column-gap: 30px;
+}
+.contents {
+  padding: 10px;
+  width: 100%;
+  height: auto;
+}
+.titleCon {
+  display: flex;
+  align-items: center;
+  font-size: 35px;
+  width: 100%;
+  height: 10%;
+}
+.title {
+  width: 100%;
+}
+.addBtn {
+  width: 120px;
+  height: 50px;
+}
+.list-div {
+  padding: 10px;
+  width: 100%;
+  height: auto;
+}
+.list-header {
+  display: flex;
+  font-weight: bold;
+  background-color: #ccc;
+  padding: 5px;
+}
+.list-header-item {
+  flex: 1;
+  padding: 5px;
+  text-align: center;
+}
+.list-item {
+  display: flex;
+  padding: 5px;
+  border-bottom: 1px solid #ccc;
+  cursor: pointer;
+}
+.list-item-value {
+  flex: 1;
+  padding: 5px;
+  text-align: center;
+}
+.div-paging {
+  text-align: center;
+  margin-top: 10px;
+}
+.div-paging button {
+  margin: 0 5px;
+}
+
+/* PDF 관련 */
+.glb-paging-div{
+  height : 100%;
+  display: flex;
+  align-items: center;          /* 수직 중앙 정렬 */
+  justify-content: center;      /* 수평 중앙 정렬 */
+}
+
+.glb-fixed-pdf-header{
+  top: 0;
+  left: 0;
+  height: var(--fixed-header-height);
+  border-bottom: 1px solid #ccc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 10px;
+  z-index: 1000;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+  position: relative; /* 자식 요소의 절대 위치를 설정하기 위해 부모에 relative 설정 */
+
+}
+/* ============================================ 태블릿 ============================================  */
+@media (max-width: 768px) {
+
+  /* 레프트바 모바일에선 하단으로 */
+  .glb-left{
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    height: 60px;
+    z-index: 9999; 
+    padding: 5px;
+  }
+  .glb-paging-div{
+    scale: 0.7;
+  }
+
+  #nav-footer-iconbox-icon{
+    height: 100%;
+    width: 50px;
+    
+  }
+  /* 하단으로 가면서 direction 해체(버튼들이 반대로 출력됨) */
+  #nav-content {
+    direction:unset;
+  }
+  .glb-fixed-header {
+    height: 30px;
+  }
+  .glb-fixed-header a{
+    scale: 0.7;
+  }
+
+  .glb-header-right-div button{
+    font-size: 12px;
+    height: 25px;
+    padding: 2px;
+    width: 50px;
+    text-align: center;
+  }
+
+  .glb-main-page .glb-content .eqipTab{
+    display: none;
+    height: calc(100vh - var(--fixed-header-height));
+    position: absolute;
+    right: 0;
+  }
+}
+
+/* ============================================ 모바일 ============================================  */
+@media (max-width: 480px) {  
+}
+
+/* ============================================ 팝업 ============================================  */
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+  
+.popup-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  width: 600px;
+  text-align: center;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+.popup-content .input-button {
+  padding: 10px;
+  margin-top: 5px;
+}
+.popup-content p {
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+}
+.popup-content input {
+  height: 30px;
+  width: 60%;
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+}
+

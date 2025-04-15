@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Google OAuth Callback</title>
+</head>
+<body>
+  <script>
+    window.onload = function () {
+      // 현재 URL에서 'code' 파라미터를 추출
+      const urlParams = new URLSearchParams(window.location.search);
+      const code = urlParams.get('code');
+
+      if (code) {
+        // 부모 창에 메시지로 'code' 전달
+        window.opener.postMessage({ code }, "http://localhost:8080");
+      }
+      
+      // 팝업 창 닫기
+      window.close();
+    };
+  </script>
+</body>
+</html>

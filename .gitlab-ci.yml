@@ -1,0 +1,56 @@
+# Stages 정의
+stages:
+  - install
+  - build
+  - deploy
+
+# 의존성 설치 Job
+install-dependencies:
+  stage: install
+  image: node:20  # Node.js 20 버전을 사용
+  script:
+    - echo "Installing dependencies..."
+    - npm ci  # 의존성 설치
+  artifacts:
+    paths:
+      - node_modules/  # 의존성 캐시
+    expire_in: 1h  # 캐시 유효 기간
+  tags:
+    - gitlab-org
+
+# 빌드 Job
+build:
+  stage: build
+  image: node:20
+  script:
+    - echo "Building Vue project..."
+    - npm run build  # Vue 프로젝트 빌드
+    - ls -al dist/ #생성 정상적으로 되었는지 확인
+  artifacts:
+    paths:
+      - dist/
+    expire_in: 1h
+  tags:
+    - gitlab-org
+    
+deploy:
+  stage: deploy
+  image: ubuntu:latest  # rsync가 기본적으로 설치된 이미지를 사용
+  before_script:
+    - apt-get update -y  # 패키지 목록 업데이트
+    - apt-get install -y openssh-client rsync  # openssh-client와 rsync 설치
+    - mkdir -p ~/.ssh
+    - echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    - ssh-keyscan -H 3.37.194.220 >> ~/.ssh/known_hosts
+  script:
+    - echo "Deploying the Vue.js project..."
+    - rsync -avzu --delete dist/ ubuntu@3.37.194.220:/home/ubuntu/eSignify/front
+
+    #- rsync -avz --delete dist/ ubuntu@3.37.194.220:/home/ubuntu/eSignify/front  # Vue.js 빌드 파일을 서버로 전송
+    - ssh ubuntu@3.37.194.220 "sudo systemctl restart nginx"  # Nginx 서버 재시작
+  only:
+    - main  # main 브랜치에서만 실행
+  tags:
+    - gitlab-org
+
