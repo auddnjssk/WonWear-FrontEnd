@@ -6,6 +6,8 @@ import { createRouter, createWebHistory } from 'vue-router';
 import MainPage              from '@components/MainPage.vue';
 import ProductPage           from '@components/ProductPage.vue';
 import DetailsPage           from '@components/DetailsPage.vue';
+import LoginMain             from '@components/LoginMain.vue';
+import UserEdit              from '@components/UserEdit.vue';
 
 // requiresAuth는 해당 화면이 인증이 필요한 화면인지 T/F
 const routes = [
@@ -23,6 +25,16 @@ const routes = [
     path: '/detailsPage/:itemsId',
     name: 'detailsPage',
     component: DetailsPage,
+  },  
+  {
+    path: '/userEdit',
+    name: 'UserEdit',
+    component: UserEdit,
+  },
+  {
+    path: '/login',
+    name: 'login',
+    component: LoginMain,
   },
 ];
 

@@ -95,6 +95,7 @@ export default {
 
 <style scoped>
   a{
+    size: 16px;
     color: black;
   }
   h1{

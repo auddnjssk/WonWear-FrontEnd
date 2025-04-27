@@ -46,7 +46,7 @@
 
 <script>
 import { ref } from 'vue';
-import '@assets/loginStyles.css'  // 스타일 파일 임포트
+// import '@assets/loginStyles.css'  // 스타일 파일 임포트
 import * as utils from "@js/utils.js";
 import * as googleLogin from '@js/googleLogin.js'; 
 import * as kakaoLogin from '@js/kakaoLogin.js'; 

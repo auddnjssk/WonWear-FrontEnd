@@ -6,9 +6,11 @@
         <img @click="logoClick" class="mainLogo" :src="backgroundImage" alt="background" />
       </div>
       <div class="topFixed-items">
-        <a>로그인</a>  
         <!-- 로그아웃 정보수정 -->
-        <a>회원가입</a>
+        <a @click = "logoutClick" v-if="loginStat">로그아웃</a> 
+        <a @click = "loginClick"  v-else>로그인</a> 
+        <a @click = "userEditClick"  v-if="loginStat">정보수정</a> 
+        <a v-else>회원가입</a> 
         <a>마이페이지</a>
         <a>장바구니</a>
       </div>
@@ -39,11 +41,12 @@
 </template>
 
 <script >
-import { ref, onMounted, onUnmounted,reactive} from 'vue';
+import { ref, onMounted, onUnmounted,reactive,watch} from 'vue';
 import WONWEARLogo from '@assets/WONWEARLogo.png';
+import { useAuthStore } from '@store/auth.js';
 import { useRouter } from 'vue-router'; // useRouter 훅 임포트
 import utils from '@js/utils.js'
-
+import '@assets/headerStyle.css'  // 스타일 파일 임포트
 
 export default {
   name: 'AppHeader',
@@ -57,8 +60,19 @@ export default {
 
     const isShrunk = ref(false)
     const router = useRouter();
+    // 로그인체크 변수
+    const loginStat = ref(null); 
+    const oAuthYn = ref(null); 
+    
+    const custStat = ref();
+    
+    const authStore = useAuthStore();
+    authStore.syncWithLocalStorage();
+   
 
-// 호출
+    const urlParams = new URLSearchParams(window.location.search);
+
+    const code = urlParams.get('code');
 
     const fetchItems = async() => {
       const result = await utils.aSyncGetApi('/menu', '');
@@ -90,15 +104,58 @@ export default {
 
     const logoClick = () => {
       router.push('/'); 
-
     };
+    const loginClick = () => {
+      router.push('/login'); 
+    };
+
+    const logoutClick = () => {
+      authStore.clearAccessToken();
+    };
+    const userEditClick = () => {
+      router.push('/userEdit'); 
+    };
+    
+    
+
 
     const handleScroll = () => {
       isShrunk.value = window.scrollY > 50 // 50px 이상 스크롤 시 줄어듦
     }
 
+    watch(() => authStore.accessToken, (newToken) => {
+        console.log("AppVue Watch !!! ",newToken);
+        if (newToken) {
+          loginStat.value = true;
+          router.push('/'); 
+        } else {
+          loginStat.value = null;
+          console.log('LeftMenu closed');
+        }
+      }
+    );
+    // 새로고침을 하더라도 토큰이 유효하면 로그인 유지
+    const accessTokenChk = () => {
+
+      console.log("authStore.accessToken",code);
+
+      // 코드가 존재하면 팝업
+      if(code){
+        oAuthYn.value = true;
+
+      }
+      if(window.location.pathname.indexOf("cust") > 0){
+        custStat.value = true;
+        loginStat.value = null;
+      }
+
+      if (authStore.accessToken) loginStat.value = true;
+      else  loginStat.value = null;
+    }
+
     onMounted(() => {
       fetchItems();
+      accessTokenChk();
 
       window.addEventListener('scroll', handleScroll)
     })
@@ -115,104 +172,23 @@ export default {
       showDropdown,
       dropdownMap,
       activeDropdownId,
+      loginClick,
+      accessTokenChk,
+      code,
+      loginStat,
+      accessToken: authStore.accessToken,
+      custStat,
+      logoutClick,
+      userEditClick,
     };
   },
 };
 </script>
 
 <style scoped>
-  a{
-    color: black;
-  }
-  h1{
-    color: black;
-  }
 
-  header {
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 180px;
-    background-color: white;
-    color: white;
-    display: flex;
-    align-items: center;
-    transition: height 0.3s ease;
-    z-index: 1000;
-    flex-direction: column; /*세로로 정렬*/
-  }
+.topFixed-items a{
+  cursor: pointer;
+}
 
-  header.shrink {
-    height: 120px;
-    position: fixed;
-  }
-
-  .topFixed{
-    height : 100%;
-    width: 100%;
-    display: flex;
-    align-items: center;          /* 수직 중앙 정렬 */
-    justify-content: space-between
-  }
-  .topFixed-items {
-    display: inline-block;        /* span을 inline-block으로 설정 */
-    vertical-align: middle;       /* 텍스트와 아이콘이 수직으로 맞춰지도록 설정 */
-  }
-  .topFixed-items a{
-    margin : 5px;
-  }
-  .centerFixed{
-    height : 100%;
-    display: flex;
-    align-items: center;          /* 수직 중앙 정렬 */
-    justify-content: center;      /* 수평 중앙 정렬 */
-  }
-  .mainLogo{
-    display: inline-block;        /* span을 inline-block으로 설정 */
-    vertical-align: middle;       /* 텍스트와 아이콘이 수직으로 맞춰지도록 설정 */
-    height: 100px;
-    width: 100px;
-    cursor: pointer;
-
-  }
-  .bottomFixed{
-    height : 100%;
-    display: flex;
-    align-items: center;          /* 수직 중앙 정렬 */
-    justify-content: center;      /* 수평 중앙 정렬 */
-
-  }
-  .bottomFixed a  {
-    margin : 10px;
-  }
-  .bottomFixed .menu-item{
-    position: relative;   /* dropdown의 기준점 */
-    height: 30px;         /* 메뉴 아이템 높이 고정 */
-    color: black;
-    margin : 5px;
-    cursor: pointer;
-  }
-  .dropdown {
-    position: absolute;
-    top: 100%;            /* menu-item 바로 아래에 붙음 */
-    left: 0;
-    background: #ebebeb;
-    list-style: none;
-    padding: 10px 0;
-    margin: 0;
-    width: 150px;
-    border-radius: 4px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-    z-index: 10;
-  }
-  /* 페이드＋슬라이드 애니메이션 */
-  .fade-slide-enter-active,
-  .fade-slide-leave-active {
-    transition: all 0.2s ease;
-  }
-  .fade-slide-enter-from,
-  .fade-slide-leave-to {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
 </style>
