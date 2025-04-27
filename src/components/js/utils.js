@@ -123,7 +123,7 @@ function getPrototypeOf(chkObject){
   } else if (itemType === '[object String]') {
     console.log('이것은 문자열입니다.');
   } else if (itemType === '[object Number]') {
-    console.log('이것은 숫자입니다.');
+    return "number"
   } else if (itemType === '[object Array]') {
     console.log('이것은 배열입니다.');
   } else {

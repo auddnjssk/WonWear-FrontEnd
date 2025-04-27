@@ -2,7 +2,7 @@
   <section class="main-page-center">
     <div class="form login">
       <div class="form-content">
-        <header>eSignify</header>
+        <header>wonWear</header>
         <form action="#" @submit.prevent="restGet">
           <div class="field input-field">
             <input id="loginId" ref="loginIdRef" type="text" placeholder="아이디" class="input" />

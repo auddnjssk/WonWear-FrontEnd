@@ -4,48 +4,33 @@
       <router-view />
     </div> -->
 
-    <div class="login" v-if="!loginStat && !custStat">
-      <div v-if="oAuthYn">
+    <!-- <div class="login" v-if="custStat">
+      <Header/>
+    </div> -->
+    <AppHeader/>
+    <div class="main-div" v-if="loginStat && !custStat">
+     
+      <div class="main">
         <router-view/>
       </div>
-      <div v-else>
-        <LoginMain/>
-      </div>
-    </div>
-    
-    <div class="login" v-if="custStat">
-      <SubmitComp/>
     </div>
 
-    <div class="main-div" v-if="loginStat && !custStat">
-      <div class="glb-left">
-        <LeftMenuBar />
-      </div>
-      <!-- 라우터가 렌더링하는 메인 콘텐츠 -->
-      <div class="main">
-        <router-view 
-        />
-      </div>
-    </div>
+    <AppFooter/>
+    
   </div>
 </template>
 
 <script>
 import { ref ,watch , onMounted  } from 'vue'; // Composition API에서 ref를 임포트
-import LeftMenuBar from '@components/LeftMenuBar.vue';
 import { useAuthStore } from '@store/auth.js';
-
-import LoginMain from '@components/LoginMain.vue'
-import SubmitComp from '@customerComp/SubmitComp.vue';
-
-console.log("origine=>" + window.location.origin);
+import AppHeader from '@components/AppHeader.vue';
+import AppFooter from '@components/AppFooter.vue';
 
 export default {
   name: 'App',
   components: {
-    LeftMenuBar,
-    LoginMain,
-    SubmitComp
+    AppHeader,
+    AppFooter
   },
   setup() {
     const loginStat = ref(null); 
@@ -127,10 +112,11 @@ export default {
 .main-div{
   display: flex;
   height: 100%;
+  padding-bottom: 120px;
 }
 .main {
   flex: 1; 
-  height: 100vh; /* 부모 높이에 맞게 설정 */
+  width: 100%; 
   border: 5px;
   background-color: #ffffff;
   box-sizing: border-box;
