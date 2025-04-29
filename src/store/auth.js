@@ -43,6 +43,7 @@ export const useAuthStore = defineStore('auth', {
     clearAccessToken() {
       this.accessToken = null;
       localStorage.removeItem('accessToken');
+      localStorage.setItem('adminYn',"");
     }
   }
 });

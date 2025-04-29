@@ -84,10 +84,10 @@ export default {
           if(response){
             if(response.message == "loginSuccess"){
               
-              console.log("response.accessToken",response.accessToken);
+              console.log("response.accessToken",response);
 
               authStore.setAccessToken(response.accessToken);
-            
+              localStorage.setItem('adminYn',response.result.admin_YN);
               //router.push('/formManagement'); 
 
             }else if((response.message == "loginFailed")){

@@ -7,6 +7,7 @@
       </div>
       <div class="topFixed-items">
         <!-- 로그아웃 정보수정 -->
+        <a @click = "menuEditClick" v-if="adminYn === 'Y'">메뉴/아이템 설정</a> 
         <a @click = "logoutClick" v-if="loginStat">로그아웃</a> 
         <a @click = "loginClick"  v-else>로그인</a> 
         <a @click = "userEditClick"  v-if="loginStat">정보수정</a> 
@@ -60,10 +61,12 @@ export default {
 
     const isShrunk = ref(false)
     const router = useRouter();
+
     // 로그인체크 변수
     const loginStat = ref(null); 
     const oAuthYn = ref(null); 
-    
+    const adminYn = ref(null); 
+
     const custStat = ref();
     
     const authStore = useAuthStore();
@@ -115,16 +118,20 @@ export default {
     const userEditClick = () => {
       router.push('/userEdit'); 
     };
-    
-    
-
+    const menuEditClick = () => {
+      router.push('/menuEdit'); 
+    };
 
     const handleScroll = () => {
       isShrunk.value = window.scrollY > 50 // 50px 이상 스크롤 시 줄어듦
     }
 
     watch(() => authStore.accessToken, (newToken) => {
-        console.log("AppVue Watch !!! ",newToken);
+
+        adminYn.value = localStorage.getItem('adminYn');
+
+        // console.log("adminYn",localStorage.getItem('adminYn'));
+
         if (newToken) {
           loginStat.value = true;
           router.push('/'); 
@@ -180,6 +187,8 @@ export default {
       custStat,
       logoutClick,
       userEditClick,
+      adminYn,
+      menuEditClick,
     };
   },
 };

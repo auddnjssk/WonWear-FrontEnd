@@ -63,7 +63,7 @@ async function  aSyncPostApi (requestUrl, values,action){
     }
 
     if(action == "put"){
-      const response = await axios.post('/api' + decodeURIComponent(requestUrl), values, {
+      const response = await axios.put('/api' + decodeURIComponent(requestUrl), values, {
         headers:{
           'Content-Type': 'application/json',
         },
@@ -80,7 +80,7 @@ async function  aSyncPostApi (requestUrl, values,action){
     }
 
     if(action == "delete"){
-      const response = await axios.post('/api' + decodeURIComponent(requestUrl), values, {
+      const response = await axios.delete('/api' + decodeURIComponent(requestUrl), values, {
         headers:{
           'Content-Type': 'application/json',
         },
