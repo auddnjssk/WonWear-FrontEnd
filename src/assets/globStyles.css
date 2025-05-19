@@ -6,7 +6,34 @@
   --fixed-header-height: 56px;
   --fixed-header-mobile-height: 56px;
 }
-
+.miniAddButton{
+  background-color: #4CAF50; /* 초록색 */
+  color: white;
+  border: none;
+  width: 24px;
+  height: 24px;
+  margin-left: 4px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  text-align: center;
+  line-height: 24px; /* 세로 가운데 정렬 */
+  font-size: 14px;
+}
+.miniXButton{
+  background-color: #f44336; /* 빨간색 */
+  color: white;
+  border: none;
+  width: 24px;
+  height: 24px;
+  margin-left: 4px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  text-align: center;
+  line-height: 24px; /* 세로 가운데 정렬 */
+  font-size: 14px;
+}
 .glb-main-page{
   flex: 0 0 85%;
   width: 100%;

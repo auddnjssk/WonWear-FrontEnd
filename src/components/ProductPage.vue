@@ -4,7 +4,8 @@
       <a>HOME ></a>
       <a>{{ mainMenu }} ></a>
       <a>{{ subMenu }} </a>
-       
+      <!-- 어드민 YN 추가해야됨 -->
+       <button @click = "addItem()">아이템추가</button>
     </div>
 
     <!-- ProductPage Content -->
@@ -16,7 +17,10 @@
             :key="items.items_id"
             @click="itemClick(items.items_id)">
             <div class = "exposeImagesCont">
-              <img class="exposeImages" :src="`http://localhost:8082/Chumbnail/${items.items_id}.jpg`"  alt="background" />
+              <img class="exposeImages" 
+                @error="handleImageError" 
+                :src="`http://localhost:8082/Chumbnail/${items.items_id}_1.png`"   
+                alt="background" />
               <a>{{ items.item_name }}</a>
               <hr>
               <a>{{ items.item_price }} {{ items.item_addinfo }}</a>
@@ -29,109 +33,98 @@
   </div>
 </template>
 
-<script>
-import '@assets/globStyles.css'
-import { ref, onMounted, nextTick } from 'vue';
-import { useRoute , useRouter } from 'vue-router';
-import utils from '@js/utils.js'
+<script setup>
+  import '@assets/globStyles.css'
+  import { ref, onMounted } from 'vue';
+  import { useRoute, useRouter } from 'vue-router';
+  import utils from '@js/utils.js';
 
-export default {
-  name: 'ProductPage',
-  components: {
-  },
-  data() {
-  },
-  setup() {
-
-    const route = useRoute();
-    const router = useRouter();
-
-    const backgroundImage = 'https://placehold.co/1000x400?text=Background'
-    const items = ref([]);
-    const showList = ref(true);
-    const showEditor = ref(false);
-    const mainMenu = route.params.main;
-    const subMenu = route.params.sub;
-
-    const itemsList = ref([]);  
-    
-    const fetchItems = async () => {
-      console.log("mainMenu!!",mainMenu);
-      console.log("subMenu!!",subMenu);
-      const result = await utils.aSyncGetApi('/items',"main=" +mainMenu + "&sub=" + subMenu);
-      console.log("result.result!!",result.result);
-      itemsList.value = result.result;
+  const route = useRoute();
+  const router = useRouter();
 
 
-    };
+  const itemsList = ref([]);
 
-    const itemClick = (items_id) => {
-      router.push(`/detailsPage/${items_id}`);
+  // const showList = ref(true);
+  // const showEditor = ref(false);
 
+  const mainMenu = route.params.main;
+  const subMenu = route.params.sub;
 
-    }
+  // 페이지네이션 상태
+  // const currentPage = ref(1);
+  // const itemsPerPage = 10;
 
-    const formAdd = () => {
-      showEditor.value = !showEditor.value;
-      showList.value = !showList.value;
-    };
+  // const paginatedData = computed(() => {
+  //   const start = (currentPage.value - 1) * itemsPerPage;
+  //   const end = start + itemsPerPage;
+  //   return itemsList.value.slice(start, end);
+  // });
 
-    onMounted(() => {
-      fetchItems();
-    });
-    return {
-      items,
-      formAdd,
-      showList,
-      showEditor,
-      backgroundImage,
-      useRoute,
-      mainMenu ,
-      subMenu,
-      itemsList,
-      itemClick,
-    };
-  },
-  computed: {
-    paginatedData() {
-      const start = (this.currentPage - 1) * this.itemsPerPage;
-      const end = start + this.itemsPerPage;
-      return this.items.slice(start, end);
-    },
-    totalPages() {
-      return Math.ceil(this.items.length / this.itemsPerPage);
-    },
-  },
-  methods: {
-    goToPage(page) {
-      this.currentPage = page; // 선택된 페이지로 이동
-      console.log(`Moved to page: ${page}`);
-    },
+  // const totalPages = computed(() => {
+  //   return Math.ceil(itemsList.value.length / itemsPerPage);
+  // });
 
+  // // ref를 통한 자식 컴포넌트 접근
+  // const childRef = ref(null);
+  // const tableName = ref(''); // 필요한 경우 설정
 
-    prevPage() {
-      if (this.currentPage > 1) {
-        this.currentPage--;
-      }
-    },
-    nextPage() {
-      if (this.currentPage < this.totalPages) {
-        this.currentPage++;
-      }
-    },
-    async listClick(FORM_ID) {
-      this.formAdd();
-      await nextTick();
+  // // 페이지 이동 함수
+  // const goToPage = (page) => {
+  //   currentPage.value = page;
+  // };
 
-      if (this.$refs.childRef && this.$refs.childRef.formIdInput) {
-        this.$refs.childRef.formIdInput(FORM_ID,this.tableName);
-      } else {
-        console.warn("CKEditor reference is not available or formIdInput method is undefined.");
-      }
+  // const prevPage = () => {
+  //   if (currentPage.value > 1) {
+  //     currentPage.value--;
+  //   }
+  // };
+
+  // const nextPage = () => {
+  //   if (currentPage.value < totalPages.value) {
+  //     currentPage.value++;
+  //   }
+  // };
+
+  const handleImageError = (event) => {
+
+    const extensions = ['jpg', 'jpeg', 'png'];
+    const currentSrc = event.target.src;
+    const baseName    = currentSrc.substring(0, currentSrc.lastIndexOf('.'));
+    const currentExt  = currentSrc.substring(currentSrc.lastIndexOf('.') + 1);
+    const nextIndex   = extensions.indexOf(currentExt.toLowerCase()) + 1;
+
+    console.log("baseName",baseName);
+    console.log("currentExt",currentExt);
+
+    if (nextIndex < extensions.length) {
+      event.target.src = `${baseName}.${extensions[nextIndex]}`;
+    } else {
+      event.target.src = 'http://localhost:8082/Chumbnail/default.png'; // 기본 이미지
     }
   }
-};
+
+  const addItem = () => {
+    router.push(`/addItem/${mainMenu}/${subMenu}`);
+  };
+
+
+  // API 호출
+  const fetchItems = async () => {
+    const result = await utils.aSyncGetApi('/items', `main=${mainMenu}&sub=${subMenu}`);
+    itemsList.value = result.result;
+  };
+
+  // 목록 아이템 클릭 → 상세 페이지로 이동
+  const itemClick = (items_id) => {
+    router.push(`/detailsPage/${items_id}`);
+  };
+
+  onMounted(() => {
+    fetchItems();
+  });
 </script>
+
 
 <style scoped>
 .exposeCont {

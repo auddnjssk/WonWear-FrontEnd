@@ -7,7 +7,8 @@
       </div>
       <div class="topFixed-items">
         <!-- 로그아웃 정보수정 -->
-        <a @click = "menuEditClick" v-if="adminYn === 'Y'">메뉴/아이템 설정</a> 
+        <!-- <a @click = "menuEditClick" v-if="adminYn === 'Y'">메뉴/아이템 설정</a>  -->
+        <a @click = "menuEditClick" v-if="loginStat">메뉴/아이템 설정</a> 
         <a @click = "logoutClick" v-if="loginStat">로그아웃</a> 
         <a @click = "loginClick"  v-else>로그인</a> 
         <a @click = "userEditClick"  v-if="loginStat">정보수정</a> 
@@ -130,8 +131,6 @@ export default {
 
         adminYn.value = localStorage.getItem('adminYn');
 
-        // console.log("adminYn",localStorage.getItem('adminYn'));
-
         if (newToken) {
           loginStat.value = true;
           router.push('/'); 
@@ -195,7 +194,101 @@ export default {
 </script>
 
 <style scoped>
+a{
+  color: black;
+  font-size: 16px;
+}
+span{
+  font-size: 16px;
+}
+header {
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 180px;
+  background-color: white;
+  color: white;
+  display: flex;
+  align-items: center;
+  transition: height 0.3s ease;
+  z-index: 1000;
+  flex-direction: column; /*세로로 정렬*/
+}
 
+header.shrink {
+  height: 120px;
+  position: fixed;
+}
+
+.topFixed{
+  height : 100%;
+  width: 100%;
+  display: flex;
+  align-items: center;          /* 수직 중앙 정렬 */
+  justify-content: space-between;
+  
+}
+.topFixed-items {
+  display: inline-block;        /* span을 inline-block으로 설정 */
+  vertical-align: middle;       /* 텍스트와 아이콘이 수직으로 맞춰지도록 설정 */
+}
+.topFixed-items a{
+  margin : 5px;
+}
+.centerFixed{
+  height : 100%;
+  display: flex;
+  align-items: center;          /* 수직 중앙 정렬 */
+  justify-content: center;      /* 수평 중앙 정렬 */
+}
+.mainLogo{
+  display: inline-block;        /* span을 inline-block으로 설정 */
+  vertical-align: middle;       /* 텍스트와 아이콘이 수직으로 맞춰지도록 설정 */
+  height: 100px;
+  width: 100px;
+  cursor: pointer;
+
+}
+.bottomFixed{
+  height : 100%;
+  display: flex;
+  align-items: center;          /* 수직 중앙 정렬 */
+  justify-content: center;      /* 수평 중앙 정렬 */
+
+}
+.bottomFixed a  {
+  margin : 10px;
+}
+.bottomFixed .menu-item{
+  position: relative;   /* dropdown의 기준점 */
+  height: 30px;         /* 메뉴 아이템 높이 고정 */
+  color: black;
+  margin : 5px;
+  cursor: pointer;
+}
+.dropdown {
+  position: absolute;
+  top: 100%;            /* menu-item 바로 아래에 붙음 */
+  left: 0;
+  background: #ebebeb;
+  list-style: none;
+  padding: 10px 0;
+  margin: 0;
+  width: 150px;
+  border-radius: 4px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+  z-index: 10;
+}
+/* 페이드＋슬라이드 애니메이션 */
+.fade-slide-enter-active,
+.fade-slide-leave-active {
+  transition: all 0.2s ease;
+}
+.fade-slide-enter-from,
+.fade-slide-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
 .topFixed-items a{
   cursor: pointer;
 }

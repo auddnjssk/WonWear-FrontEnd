@@ -41,7 +41,7 @@ async function  aSyncPostApi (requestUrl, values,action){
   // 디폴트는 post
   if(isEmpty(action)) action = "post";
 
-  console.log("action",values);
+  console.log(action,"action",values);
 
   try {
     if(action == "post"){
@@ -279,12 +279,14 @@ const deviceChk = () =>{
   /iPhone|iPad|iPod/i.test(navigator.userAgent)
 }
 
-const uploadImageToServer = async (blob,fileName) => {
+// 이미지파일 업로드
+const uploadImageToServer = async (blob,fileName,dir) => {
+  console.log("uploadImageToServer",localStorage.getItem('accessToken'));
+  
   const formData = new FormData();
   formData.append("image", blob, fileName+".png");
-
+  formData.append("dir", dir);
   
-  console.log("uploadImageToServer",localStorage.getItem('accessToken'));
   try {
     const response = await fetch("/api/imageUpload", {
       method: "POST",

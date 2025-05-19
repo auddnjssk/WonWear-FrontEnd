@@ -1,37 +1,66 @@
 <template>
   <div class="ProductPage">
-    <!-- ProductPage Content -->
     <div class="glb-contents">
-      <div class = "chumbnail">
+      <div class="chumbnail">
         <div class = "chumbnail-content">
-          <img style ="width: 100%;" class="exposeImages" :src="`http://localhost:8082/Chumbnail/${itemsId}.jpg`"  alt="background" />
+          <div>
+            <input
+              ref="fileInput"
+              type="file"
+              accept="image/*"
+              @change="handleFileChange"
+              style="display: none;"
+            />
+            <img class="exposeImages" 
+                style ="width: 100%;"
+                @error="handleImageError" 
+                :src="mainImageSrc"   
+                alt="background" />
+          </div>
+          <div class="fiveImage">
+            <div class="fiveImage-content">
+              <!-- 이미지가 있는 곳 -->
+              <div class="image-wrapper" v-for="(index) in image_number" :key="index">
+                <img class="image" 
+                  :src="`http://localhost:8082/Chumbnail/${itemsId}_${index}.png`"
+                  @click="fiveImageClick(index)"   
+                  alt="thumbnail" />
+              </div>
+
+              <!-- 이미지가 부족할 경우 빈 박스로 채움 -->
+              <div
+                class="image-wrapper empty"
+                v-for="n in 5 - image_number"
+                :key="'empty-' + n"
+              />             
+            </div>
+            <div class="pagination">
+              <button @click="prevPage" :disabled="currentPage === 1">Previous</button>
+              <button @click="nextPage" :disabled="currentPage === totalPages">Next</button>
+            </div>
+          </div>
+
         </div>
-        <div class = "chumbnail-content">
-          <a>{{itemName}}</a>
-              
+        <div class="chumbnail-content">
+          <a>{{ itemName }}</a>
           <hr>
-          
-          <a>소비자가 : {{itemPriceFomt}}</a>
-          
+          <a>소비자가 &ensp;: {{ itemPriceFomt }}</a>
           <hr>
-          
-          <a>판매가 : {{itemPriceFomt}}</a>
-          
+          <a>판매가 &ensp;&ensp;&ensp;: {{ itemPriceFomt }}</a>
           <hr style="width:100%">
-          <a>색상 : </a>
-          <select v-model="selectedColor" id="colorCombo">
+          <a>색상 &ensp;&ensp;&ensp;&ensp;&ensp;: </a>
+          <select v-model="selectedColor">
             <option disabled value="">색상을 선택하세요</option>
-            <option v-for="color in itemColor" :key="color" :value="color.item_detail">
+            <option v-for="color in itemColor" :key="color.item_detail" :value="color.item_detail">
               {{ color.item_detail }}
             </option>
           </select>
-
           <br>
           <hr style="width:100%">
-          <a>사이즈 : </a>
-          <select v-model="selectedSize" id="colorCombo">
-            <option disabled value="">색상을 선택하세요</option>
-            <option v-for="size in itemSize" :key="size" :value="size.item_detail">
+          <a>사이즈 &ensp;&ensp;&ensp;: </a>
+          <select v-model="selectedSize">
+            <option disabled value="">사이즈를 선택하세요</option>
+            <option v-for="size in itemSize" :key="size.item_detail" :value="size.item_detail">
               {{ size.item_detail }}
             </option>
           </select>
@@ -40,241 +69,211 @@
 
           <a>(최소주문수량 1개 이상)</a> <br>
           <a>위 옵션선택 박스를 선택하시면 아래에 상품이 추가됩니다.</a>
-
           <hr>
-          
-          <!-- 선택된 색상과 사이즈 출력 -->
+
           <div class="quantity-div" v-for="(selectItem, index) in selectedItem" :key="index">
             <div class="quantity-title">
-              <a>{{itemName}}</a><br>
+              <a>{{ itemName }}</a><br>
               <a>{{ selectItem.color }} - {{ selectItem.size }}</a>
             </div>
             <div class="quantity">
-              <input type="number" v-model.number="selectItem.quantity" min="1" style="width: 60px; margin: 5px;"/>
+              <input type="number" v-model.number="selectItem.quantity" :key="index" min="1" style="width: 60px; margin: 5px;"/>
               <button @click="removeItem(index)" style="background: #ccc; border: none; padding: 4px 8px; cursor: pointer;">X</button>
             </div>
           </div>
 
           <hr>
-          <a style="margin: 10px;">TOTAL : {{totalPrice}}</a>
-          
+          <a style="margin: 10px;">TOTAL : {{ totalPrice }}</a>
+
           <div>
-            <div class="Buy-Button-Div"> 
-              <button class="Buy-Button" style="width:100%; background: #333; color:white" @click="buyButton()" >BUT IT NOW</button>
+            <div class="Buy-Button-Div">
+              <button class="Buy-Button" style="width:100%; background: #333; color:white" @click="buyButton">BUY IT NOW</button>
             </div>
             <div class="Buy-Button-Div">
-              <button class="Buy-Button">ADD TO CART</button>
-              <button class="Buy-Button">WISH LIST</button>
+              <button @click = "addCart" class="Buy-Button">ADD TO CART</button>
+              <button @click = "addWishList" class="Buy-Button">WISH LIST</button>
             </div>
           </div>
         </div>
-
       </div>
 
       <hr>
-      <!-- 본문  -->
-      
+
       <div>
         <a>PRODUCT DETAIL</a>
-        <img 
-          style ="width: 100%;" 
-          class="exposeImages" 
-          v-for = 'itemImage in itemsList'
-          :key='itemImage.key'
-          :src=itemImage.src  
-          alt="background" />
-          
+        <img style="width: 100%;" class="exposeImages" v-for="itemImage in itemsList" :key="itemImage.key" :src="itemImage.src" alt="background" />
       </div>
     </div>
-    <!-- ProductPage ContentEnd -->
   </div>
 </template>
 
-<script>
-import '@assets/globStyles.css'
-import { ref, onMounted, nextTick,watch } from 'vue';
-import { useRoute , useRouter } from 'vue-router';
-import utils from '@js/utils.js'
+<script setup>
+import { ref, watch, onMounted } from 'vue';
+import { useRoute } from 'vue-router';
+import utils from '@js/utils.js';
+import { useAuthStore } from '@store/auth.js';
+import { useRouter } from 'vue-router'; // useRouter 훅 임포트
 
-export default {
-  name: 'DetailsPage',
-  components: {
-  },
-  data() {
-  },
-  setup() {
-    
-    const route = useRoute();
-    const router = useRouter();
+const route = useRoute();
+const image_number = ref('');
+const itemsId = route.params.itemsId;
+const itemName = ref('');
+const itemPrice = ref(0);
+const itemPriceFomt = ref('');
+const itemSize = ref([]);
+const itemColor = ref([]);
+const itemsList = ref([]);
 
-    const itemName = ref(null);
-    const itemPrice = ref(null);
-    const itemSize = ref([]);
-    const itemColor = ref([]);
-    const itemPriceFomt = ref(null);
-    
-    // 콤보에 선택된 값
-    let selectedItemDelete = false;
+const selectedQuantity = ref('1');
+const selectedColor    = ref('');
+const selectedSize     = ref('');
+const selectedItem     = ref([]);
+const totalPrice       = ref(0);
+const mainImageSrc     = ref(`http://localhost:8082/Chumbnail/${itemsId}_1.png`)
 
-    // 콤보에 선택된 값
-    const selectedColor = ref("");
-    const selectedSize  = ref("");
-    const selectedItem  = ref([]);
+// 로그인체크 변수
+const loginStat = ref(null); 
+const oAuthYn = ref(null); 
+const adminYn = ref(null); 
+const router = useRouter();
+const custStat = ref();
 
-    const showList = ref(true);
-    const showEditor = ref(false);
+const authStore = useAuthStore();
+authStore.syncWithLocalStorage();
+const urlParams = new URLSearchParams(window.location.search);
 
-    const itemsId = route.params.itemsId;
-    const itemsList = ref([]);
-    
-    const totalPrice = ref(0);
+const code = urlParams.get('code');
 
-    const fetchItems = async () => {
+const fetchItems = async () => {
+  const result = await utils.aSyncGetApi('/itemDetail', `itemsId=${itemsId}`);
+  console.log("result",result);
+  const data = result.result[0];
+  itemName.value      = data.item_name;
+  itemPrice.value     = data.item_price;
+  itemPriceFomt.value = itemPrice.value.toLocaleString();
+  itemSize.value      = data.items_size;
+  itemColor.value     = data.items_color;
+  image_number.value  = data.image_number;
 
-      const result = await utils.aSyncGetApi('/itemDetail',"itemsId=" +itemsId);
-      const imageNumber = result.result[0].image_number;
-      itemName.value    = result.result[0].item_name;
-      itemPrice.value   = result.result[0].item_price;
-      // 000,000 포매팅
-      itemPriceFomt.value   = itemPrice.value.toLocaleString();
-      itemSize.value = result.result[0].items_size;
-      itemColor.value = result.result[0].items_color;
-
-      console.log("itemsList.value",itemSize.value);
-      console.log("itemsList.value",itemColor.value);
-
-      for(let i=1 ; i <= imageNumber ; i++){
-        console.log(i);
-        const val = {
-          key : i ,
-          src : 'http://localhost:8082/itemDetails/' + itemsId+'_' + i + '.jpg',
-
-        }
-        itemsList.value.push(val);
-      }
-    };
-    
-    // 색상과 사이즈가 모두 선택되었을 때 발생할 이벤트
-    watch([selectedColor, selectedSize], ([newColor, newSize] ) => {
-      if (newColor && newSize) {
-        // 이미 선택된 색상과 사이즈가 존재하는지 체크
-        const existingItem = selectedItem.value.find(item => item.color === newColor && item.size === newSize);
-
-        if (!existingItem) {
-        const val = {
-          color: newColor,
-          size: newSize,
-          quantity:1
-        };
-        selectedItem.value.push(val);
-
-        console.log("selectedItem.value",selectedItem.value);
-
-      }
-        console.log(`선택된 색상: ${newColor}, 선택된 사이즈: ${newSize}` , selectedItem.value);
-        // 예: 서버에 요청하거나 다른 동작을 실행
-      }
-    });
-    watch(
-      () => selectedItem.value, // selectedItem.value 배열을 감지
-      (newItems, oldItems) => {
-        console.log("newItems",selectedItem.value.length);
-        console.log(utils.getPrototypeOf(newItems),`Item at`,oldItems);
-        
-        if(selectedItem.value.length > 0){
-        
-          totalPrice.value = null;
-          // selectedItem의 내용이 변경될 때마다 실행됩니다.
-          selectedItem.value.forEach((item) => {
-            totalPrice.value = totalPrice.value + (itemPrice.value* item.quantity);
-          });
-          totalPrice.value   = totalPrice.value.toLocaleString();
-        }else{
-          totalPrice.value = 0
-        }
-      },
-      { deep: true } // 배열 내 객체 속성까지 감지하려면 deep 옵션을 true로 설정해야 합니다.
-    );
-    const itemClick = (items_id) => {
-      router.push(`/productPage/${items_id}`);
-    }
-    const buyButton = () => {
-      console.log("selectedItem.value",selectedItem.value)
-    }
-    const removeItem = (idx) =>{
-      selectedItemDelete = true;
-      console.log("removeItem",selectedItem.value[idx])
-      selectedItem.value.splice(idx, 1);
-    }
-    const formAdd = () => {
-      showEditor.value = !showEditor.value;
-      showList.value = !showList.value;
-    };
-
-    onMounted(() => {
-      fetchItems();
-    });
-    return {
-      formAdd,
-      showList,
-      showEditor,
-      useRoute,
-      itemsList,
-      itemClick,
-      itemsId,
-      itemName,
-      itemSize,
-      itemColor, 
-      selectedColor,
-      selectedSize,
-      itemPrice,
-      selectedItem,
-      totalPrice,
-      buyButton,
-      itemPriceFomt,
-      removeItem,
-      selectedItemDelete,
-    };
-  },
-  computed: {
-    paginatedData() {
-      const start = (this.currentPage - 1) * this.itemsPerPage;
-      const end = start + this.itemsPerPage;
-      return this.items.slice(start, end);
-    },
-    totalPages() {
-      return Math.ceil(this.items.length / this.itemsPerPage);
-    },
-  },
-  methods: {
-    goToPage(page) {
-      this.currentPage = page; // 선택된 페이지로 이동
-      console.log(`Moved to page: ${page}`);
-    },
-
-
-    prevPage() {
-      if (this.currentPage > 1) {
-        this.currentPage--;
-      }
-    },
-    nextPage() {
-      if (this.currentPage < this.totalPages) {
-        this.currentPage++;
-      }
-    },
-    async listClick(FORM_ID) {
-      this.formAdd();
-      await nextTick();
-
-      if (this.$refs.childRef && this.$refs.childRef.formIdInput) {
-        this.$refs.childRef.formIdInput(FORM_ID,this.tableName);
-      } else {
-        console.warn("CKEditor reference is not available or formIdInput method is undefined.");
-      }
-    }
+  for (let i = 1; i <= data.image_number; i++) {
+    itemsList.value.push({ key: i, src: `http://localhost:8082/ItemDetails/${itemsId}_${i}.jpg` });
   }
 };
+
+const handleImageError = (event) => {
+  const extensions = ['jpg', 'jpeg', 'png'];
+  const currentSrc = event.target.src;
+  const baseName = currentSrc.substring(0, currentSrc.lastIndexOf('.'));
+  const currentExt = currentSrc.substring(currentSrc.lastIndexOf('.') + 1);
+  const nextIndex = extensions.indexOf(currentExt.toLowerCase()) + 1;
+  if (nextIndex < extensions.length) {
+    event.target.src = `${baseName}.${extensions[nextIndex]}`;
+  } else {
+    event.target.src = 'http://localhost:8082/Chumbnail/default.png';
+  }
+};
+const fiveImageClick = (index) => { 
+
+  mainImageSrc.value = 'http://localhost:8082/Chumbnail/'+itemsId+'_'+index+'.png';
+
+
+  console.log(index);
+};
+
+const addCart = async() => {
+  console.log("loginStat",loginStat.value);
+
+  if(selectedItem.value.length < 1){
+    utils.showAlert("alert","제품을 선택해주세요");
+    return;
+  }
+
+  // 로그인 상태라면 장바구니 서버에 저장,
+  if(loginStat.value){
+    const result = await utils.aSyncPostApi('/cart',selectedItem.value);
+    console.log("result",result);
+
+  }else{ // 로그인 상태가 아니라면 세션스토리지에 저장
+    console.log("로그아웃");
+
+  }
+  
+};
+const addWishList = async() => {
+  console.log("selectItem",selectedItem.value);
+  
+  
+};
+
+watch([selectedColor, selectedSize], ([newColor, newSize]) => {
+  if (newColor && newSize) {
+    const exists = selectedItem.value.find(item => item.color === newColor && item.size === newSize);
+    console.log("exists",itemSize.value );
+    if (!exists) {
+      const size  = itemSize.value.find(itemSize => itemSize.item_detail === newSize);
+      const color = itemColor.value.find(itemColor => itemColor.item_detail === newColor);
+      console.log(size,"exists",color );
+      selectedItem.value.push({ 
+        color: newColor,
+        size: newSize, 
+        quantity: selectedQuantity.value,
+        items_detail_id1 : size.items_detail_id,
+        items_detail_id2 : color.items_detail_id,
+      });
+    }
+  }
+});
+
+watch(selectedItem, (newItems) => {
+  let total = 0;
+  console.log("newItems",newItems);
+  selectedItem.value = newItems;
+  newItems.forEach(item => total += item.quantity * itemPrice.value);
+  totalPrice.value = total.toLocaleString();
+}, { deep: true });
+
+const removeItem = (index) => {
+  selectedItem.value.splice(index, 1);
+};
+
+const buyButton = () => {
+  console.log("구매 상품:", selectedItem.value);
+};
+
+
+watch(() => authStore.accessToken, (newToken) => {
+
+    adminYn.value = localStorage.getItem('adminYn');
+
+    if (newToken) {
+      loginStat.value = true;
+      router.push('/'); 
+    } else {
+      loginStat.value = null;
+      console.log('LeftMenu closed');
+    }
+  }
+);
+// 새로고침을 하더라도 토큰이 유효하면 로그인 유지
+const accessTokenChk = () => {
+
+  // 코드가 존재하면 팝업
+  if(code){
+    oAuthYn.value = true;
+
+  }
+  if(window.location.pathname.indexOf("cust") > 0){
+    custStat.value = true;
+    loginStat.value = null;
+  }
+
+  if (authStore.accessToken) loginStat.value = true;
+  else  loginStat.value = null;
+}
+onMounted(() => {
+  fetchItems();
+  accessTokenChk();
+});
 </script>
 
 <style scoped>
@@ -288,6 +287,39 @@ export default {
   padding: 20px;
   box-sizing: border-box;
 }
+.fiveImage {
+  width: 100%;
+  overflow: hidden;
+}
+
+.fiveImage-content {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.image-wrapper {
+  flex: 1; /* 5개면 1씩 균등 분할 */
+  padding: 5px; /* 이미지 사이 여백 */
+  box-sizing: border-box;
+}
+
+.image {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.image:hover {
+  transform: scale(1.05);
+  border-color: #333;
+}
+
+
 
 .Buy-Button-Div {
   padding : 2px;
@@ -311,6 +343,20 @@ export default {
   flex: 3; /* 각각 50% */
 }
 
+
+.input {
+  padding: 2px 12px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  transition: border-color 0.3s, box-shadow 0.3s;
+  outline: none;
+}
+
+.input-wrapper input:focus {
+  border-color: #409eff;
+  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
+}
 
 
 </style>

@@ -9,6 +9,7 @@ import DetailsPage           from '@components/DetailsPage.vue';
 import LoginMain             from '@components/LoginMain.vue';
 import UserEdit              from '@components/UserEdit.vue';
 import MenuEdit              from '@components/MenuEdit.vue';
+import AddItem              from '@components/AddItem.vue';
 
 // requiresAuth는 해당 화면이 인증이 필요한 화면인지 T/F
 const routes = [
@@ -21,6 +22,11 @@ const routes = [
     path: '/productPage/:main/:sub',
     name: 'productPage',
     component: ProductPage,
+  },
+  {
+    path: '/addItem/:main/:sub',
+    name: 'addItem',
+    component: AddItem,
   },
   {
     path: '/detailsPage/:itemsId',

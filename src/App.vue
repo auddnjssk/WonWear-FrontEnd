@@ -11,7 +11,7 @@
     <div class="main-div" >
      
       <div class="main">
-        <router-view/>
+        <router-view :key="$route.fullPath" />
       </div>
     </div>
 

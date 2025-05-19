@@ -1,10 +1,11 @@
 <template>
   <div class="hero">
-    <img class="background" :src="backgroundImage" alt="background" />
+    
+    <img class="background" :src="contents[currentIndex]?.image_url" alt="background" />
     
     <div class="content">
       <transition name="fade" mode="out-in">
-        <div :key="currentIndex" class="text">
+        <div :key="currentIndex" class="text" >
           {{ contents[currentIndex] }}
         </div>
       </transition>
@@ -24,21 +25,31 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
+import utils from '@js/utils.js'
 
-const backgroundImage = 'https://placehold.co/1000x400?text=Background'
 
-const contents = [
-  '쉽고 빠른 계약',
-  '모바일 서명 지원',
-  '안전한 파일 저장',
-  '실시간 진행 현황'
-]
+const contents = ref([]);
 
 const currentIndex = ref(0)
 let interval = null
 
 const changeContent = () => {
-  currentIndex.value = (currentIndex.value + 1) % contents.length
+  currentIndex.value = (currentIndex.value + 1) % contents.value.length
+}
+
+const fetchItems = async () => {
+  console.log("resul!!t");
+  const result = await utils.aSyncGetApi('/mainBanner',"");
+  console.log("result",result.result);
+
+  for (const map of result.result) {
+    const val = {
+      seqn             : map.seqn ,
+      image_url        : `http://localhost:8082/Banner/${map.banner_id}.${map.banner_extension}`
+    }
+    contents.value.push(val);
+
+  }
 }
 
 const goTo = (index) => {
@@ -52,6 +63,7 @@ const resetInterval = () => {
 }
 
 onMounted(() => {
+  fetchItems();
   resetInterval()
 })
 
