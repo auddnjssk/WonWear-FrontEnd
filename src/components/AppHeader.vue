@@ -1,296 +1,154 @@
 <template>
-  <header :class="{ shrink: isShrunk }">
-
-    <div class="topFixed">
-      <div class="centerFixed">
-        <img @click="logoClick" class="mainLogo" :src="backgroundImage" alt="background" />
+  <header :class="[{ 'h-[120px] fixed': isShrunk }, 'top-0 left-0 w-full bg-white flex flex-col transition-all duration-300 z-[1000]']">
+    <div class="flex items-center justify-between w-full h-full">
+      <div class="flex items-center justify-center h-full">
+        <img
+          @click="logoClick"
+          class="inline-block align-middle h-[100px] w-[100px] cursor-pointer"
+          :src="backgroundImage"
+          alt="background"
+        />
       </div>
-      <div class="topFixed-items">
-        <!-- 로그아웃 정보수정 -->
-        <!-- <a @click = "menuEditClick" v-if="adminYn === 'Y'">메뉴/아이템 설정</a>  -->
-        <a @click = "menuEditClick" v-if="loginStat">메뉴/아이템 설정</a> 
-        <a @click = "logoutClick" v-if="loginStat">로그아웃</a> 
-        <a @click = "loginClick"  v-else>로그인</a> 
-        <a @click = "userEditClick"  v-if="loginStat">정보수정</a> 
-        <a v-else>회원가입</a> 
-        <a>마이페이지</a>
-        <a>장바구니</a>
+      <div class="inline-block align-middle">
+        <a @click="orderListClick" v-if="loginStat" class="mx-1 text-black text-base cursor-pointer">주문 목록</a>
+        <a @click="menuEditClick" v-if="loginStat" class="mx-1 text-black text-base cursor-pointer">메뉴/아이템 설정</a>
+        <a @click="logoutClick" v-if="loginStat" class="mx-1 text-black text-base cursor-pointer">로그아웃</a>
+        <a @click="loginClick" v-else class="mx-1 text-black text-base cursor-pointer">로그인</a>
+        <a @click="userEditClick" v-if="loginStat" class="mx-1 text-black text-base cursor-pointer">정보수정</a>
+        <a v-else class="mx-1 text-black text-base">회원가입</a>
+        <a @click="myPageClick" class="mx-1 text-black text-base cursor-pointer">마이페이지</a>
+        <a @click="cartClick" class="mx-1 text-black text-base cursor-pointer">장바구니</a>
       </div>
     </div>
 
-    <div class="bottomFixed">
-      <div 
-        v-for="menu in menuList" 
+    <div class="flex items-center justify-center h-full">
+      <div
+        v-for="(menu,index) in menuList"
         :key="menu.mainmenu_id"
-        class="menu-item" 
+        class="relative h-[30px] text-black mx-1 cursor-pointer"
         @mouseenter="menu.subYn === 'Y' && showDropdown(menu.mainmenu_id, true)"
         @mouseleave="menu.subYn === 'Y' && showDropdown(menu.mainmenu_id, false)"
       >
-        <span data-type="main" @click="menuClick">{{ menu.mainmenu_name }}</span>
-
-        <transition  v-if="menu.subYn === 'Y' && menu.subMenuList && activeDropdownId === menu.mainmenu_id"
-          name="fade-slide">
-          <ul class="dropdown">
-            <li v-for="sub in menu.subMenuList" :key="sub.mainmenu_id" data-type="sub" @click="menuClick"> {{ sub.submenu_name }}</li>
+        <span data-type="main" class="text-base" @click="menuClick(index)">{{ menu.mainmenu_name }}</span>
+        <transition name="fade-slide">
+          <ul
+            v-if="menu.subYn === 'Y' && menu.subMenuList && activeDropdownId === menu.mainmenu_id"
+            class="absolute top-full left-0 bg-[#ebebeb] list-none py-2 px-0 m-0 w-[150px] rounded shadow-lg z-10"
+          >
+            <li
+              v-for="sub in menu.subMenuList"
+              :key="sub.mainmenu_id"
+              data-type="sub"
+              @click="menuClick(menu.mainmenu_id)"
+              class="px-4 py-2 hover:bg-gray-200"
+            >
+              {{ sub.submenu_name }}
+            </li>
           </ul>
         </transition>
       </div>
     </div>
   </header>
-
-  <hr>
-
+  <hr />
 </template>
-
-<script >
-import { ref, onMounted, onUnmounted,reactive,watch} from 'vue';
+<script setup>
+import { ref, onMounted, onUnmounted, watch } from 'vue';
+import { useRouter } from 'vue-router';
 import WONWEARLogo from '@assets/WONWEARLogo.png';
+import utils from '@js/utils.js';
 import { useAuthStore } from '@store/auth.js';
-import { useRouter } from 'vue-router'; // useRouter 훅 임포트
-import utils from '@js/utils.js'
-import '@assets/headerStyle.css'  // 스타일 파일 임포트
+import '@assets/headerStyle.css';
 
-export default {
-  name: 'AppHeader',
-  setup() {
+const backgroundImage = WONWEARLogo;
+const activeDropdownId = ref(null);
+const menuList = ref([]);
+const isShrunk = ref(false);
+const loginStat = ref(null);
+const oAuthYn = ref(null);
+const adminYn = ref(null);
+const custStat = ref();
+const authStore = useAuthStore();
+authStore.syncWithLocalStorage();
+const router = useRouter();
 
-    const backgroundImage = WONWEARLogo;
-    const activeDropdownId = ref(null);
-    const dropdownMap = reactive({});
+const urlParams = new URLSearchParams(window.location.search);
+const code = urlParams.get('code');
 
-    const menuList = ref([]);    
-
-    const isShrunk = ref(false)
-    const router = useRouter();
-
-    // 로그인체크 변수
-    const loginStat = ref(null); 
-    const oAuthYn = ref(null); 
-    const adminYn = ref(null); 
-
-    const custStat = ref();
-    
-    const authStore = useAuthStore();
-    authStore.syncWithLocalStorage();
-   
-
-    const urlParams = new URLSearchParams(window.location.search);
-
-    const code = urlParams.get('code');
-
-    const fetchItems = async() => {
-      const result = await utils.aSyncGetApi('/menu', '');
-      menuList.value = result.result;
-      console.log("menuList.value",menuList.value);
-    }
-
-    const showDropdown = (menuId, show) => {
-      activeDropdownId.value = show ? menuId : null;
-    }
-    
-    const menuClick = async(event) => {
-      const type = event.target.dataset.type;
-      const mainSpan = event.target.closest('.dropdown')?.previousElementSibling;
-
-      let sub  = '';
-      let main = '';
-
-      if (type === "main") {
-        main = event.target.textContent.trim();
-      }else if (type === "sub"){
-        main = mainSpan?.innerText.trim() || '';
-        sub = event.target.textContent.trim();
-      }
-
-      router.push(`/productPage/${main}/${sub}`);
-    };
-
-
-    const logoClick = () => {
-      router.push('/'); 
-    };
-    const loginClick = () => {
-      router.push('/login'); 
-    };
-
-    const logoutClick = () => {
-      authStore.clearAccessToken();
-    };
-    const userEditClick = () => {
-      router.push('/userEdit'); 
-    };
-    const menuEditClick = () => {
-      router.push('/menuEdit'); 
-    };
-
-    const handleScroll = () => {
-      isShrunk.value = window.scrollY > 50 // 50px 이상 스크롤 시 줄어듦
-    }
-
-    watch(() => authStore.accessToken, (newToken) => {
-
-        adminYn.value = localStorage.getItem('adminYn');
-
-        if (newToken) {
-          loginStat.value = true;
-          router.push('/'); 
-        } else {
-          loginStat.value = null;
-          console.log('LeftMenu closed');
-        }
-      }
-    );
-    // 새로고침을 하더라도 토큰이 유효하면 로그인 유지
-    const accessTokenChk = () => {
-
-      console.log("authStore.accessToken",code);
-
-      // 코드가 존재하면 팝업
-      if(code){
-        oAuthYn.value = true;
-
-      }
-      if(window.location.pathname.indexOf("cust") > 0){
-        custStat.value = true;
-        loginStat.value = null;
-      }
-
-      if (authStore.accessToken) loginStat.value = true;
-      else  loginStat.value = null;
-    }
-
-    onMounted(() => {
-      fetchItems();
-      accessTokenChk();
-
-      window.addEventListener('scroll', handleScroll)
-    })
-
-    onUnmounted(() => {
-      window.removeEventListener('scroll', handleScroll)
-    })
-
-    return {
-      backgroundImage,
-      menuClick,
-      logoClick,
-      menuList,
-      showDropdown,
-      dropdownMap,
-      activeDropdownId,
-      loginClick,
-      accessTokenChk,
-      code,
-      loginStat,
-      accessToken: authStore.accessToken,
-      custStat,
-      logoutClick,
-      userEditClick,
-      adminYn,
-      menuEditClick,
-    };
-  },
+const fetchItems = async () => {
+  const result = await utils.aSyncGetApi('/menu', '');
+  menuList.value = result.result;
 };
+
+const showDropdown = (menuId, show) => {
+  activeDropdownId.value = show ? menuId : null;
+};
+
+const menuClick = async (mainmenuId) => {
+  const type = event.target.dataset.type;
+
+
+  let sub = '';
+  let main = '';
+
+  if (type === 'main') {
+    main = event.target.textContent.trim();
+  } else if (type === 'sub') {
+    const menuIndex = menuList.value.findIndex(menuList => menuList.mainmenu_id == mainmenuId);
+    main = menuList.value[menuIndex].mainmenu_name;
+    sub = event.target.textContent.trim();
+  }
+
+  console.log("main",main);
+  router.push(`/productPage/${main}/${sub}`);
+};
+
+const logoClick      = () => router.push('/');
+const loginClick     = () => router.push('/login');
+const logoutClick    = () => authStore.clearAccessToken();
+const userEditClick  = () => router.push('/userEdit');
+const myPageClick    = () => router.push('/myPage');
+const menuEditClick  = () => router.push('/menuEdit');
+const cartClick      = () => router.push('/cartList');
+const orderListClick = () => router.push('/orderListPage');
+
+const handleScroll = () => {
+  isShrunk.value = window.scrollY > 50;
+};
+
+watch(() => authStore.accessToken, (newToken) => {
+  adminYn.value = localStorage.getItem('adminYn');
+  loginStat.value = newToken ? true : null;
+  if (newToken) router.push('/');
+});
+
+const accessTokenChk = () => {
+  if (code) oAuthYn.value = true;
+  if (window.location.pathname.indexOf('cust') > 0) {
+    custStat.value = true;
+    loginStat.value = null;
+  }
+  loginStat.value = authStore.accessToken ? true : null;
+};
+
+onMounted(() => {
+  fetchItems();
+  accessTokenChk();
+  window.addEventListener('scroll', handleScroll);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll);
+});
 </script>
 
 <style scoped>
-a{
-  color: black;
-  font-size: 16px;
-}
-span{
-  font-size: 16px;
-}
-header {
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 180px;
-  background-color: white;
-  color: white;
-  display: flex;
-  align-items: center;
-  transition: height 0.3s ease;
-  z-index: 1000;
-  flex-direction: column; /*세로로 정렬*/
-}
-
-header.shrink {
-  height: 120px;
-  position: fixed;
-}
-
-.topFixed{
-  height : 100%;
-  width: 100%;
-  display: flex;
-  align-items: center;          /* 수직 중앙 정렬 */
-  justify-content: space-between;
-  
-}
-.topFixed-items {
-  display: inline-block;        /* span을 inline-block으로 설정 */
-  vertical-align: middle;       /* 텍스트와 아이콘이 수직으로 맞춰지도록 설정 */
-}
-.topFixed-items a{
-  margin : 5px;
-}
-.centerFixed{
-  height : 100%;
-  display: flex;
-  align-items: center;          /* 수직 중앙 정렬 */
-  justify-content: center;      /* 수평 중앙 정렬 */
-}
-.mainLogo{
-  display: inline-block;        /* span을 inline-block으로 설정 */
-  vertical-align: middle;       /* 텍스트와 아이콘이 수직으로 맞춰지도록 설정 */
-  height: 100px;
-  width: 100px;
-  cursor: pointer;
-
-}
-.bottomFixed{
-  height : 100%;
-  display: flex;
-  align-items: center;          /* 수직 중앙 정렬 */
-  justify-content: center;      /* 수평 중앙 정렬 */
-
-}
-.bottomFixed a  {
-  margin : 10px;
-}
-.bottomFixed .menu-item{
-  position: relative;   /* dropdown의 기준점 */
-  height: 30px;         /* 메뉴 아이템 높이 고정 */
-  color: black;
-  margin : 5px;
-  cursor: pointer;
-}
-.dropdown {
-  position: absolute;
-  top: 100%;            /* menu-item 바로 아래에 붙음 */
-  left: 0;
-  background: #ebebeb;
-  list-style: none;
-  padding: 10px 0;
-  margin: 0;
-  width: 150px;
-  border-radius: 4px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-  z-index: 10;
-}
-/* 페이드＋슬라이드 애니메이션 */
-.fade-slide-enter-active,
-.fade-slide-leave-active {
-  transition: all 0.2s ease;
-}
-.fade-slide-enter-from,
-.fade-slide-leave-to {
-  opacity: 0;
-  transform: translateY(-10px);
-}
-.topFixed-items a{
-  cursor: pointer;
-}
-
+  .fade-slide-enter-active,
+  .fade-slide-leave-active {
+    transition: all 0.2s ease;
+  }
+  .fade-slide-enter-from,
+  .fade-slide-leave-to {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
 </style>

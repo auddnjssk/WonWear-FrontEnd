@@ -20,22 +20,23 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, watch } from 'vue';
 import AppHeader from '@components/AppHeader.vue';
 import AppFooter from '@components/AppFooter.vue';
+import { useAuthStore } from '@store/auth.js';
+import { useRouter } from 'vue-router';
 
-export default {
-  name: 'App',
-  components: {
-    AppHeader,
-    AppFooter
-  },
-  setup() {
+const loginStat = ref(null);
+const authStore = useAuthStore();
+const router = useRouter();
 
-    return {
-    };
-  }
-};
+
+watch(() => authStore.accessToken, (newToken) => {
+  loginStat.value = newToken ? true : null;
+  if (newToken) router.push('/');
+});
+
 </script>
 
 <style scoped>
@@ -47,7 +48,7 @@ export default {
 .main-div{
   display: flex;
   height: 100%;
-  padding-bottom: 120px;
+  padding: 100px;
 }
 .main {
   flex: 1; 

@@ -12,7 +12,6 @@ export default createStore({
   mutations: {
     // 상태를 변경하는 동기 함수
     setUserData(state, { userName, userPicture }) {
-      console.log("index!!!",userName, userPicture);
       state.userName = userName;
       state.userPicture = userPicture;
       state.isLoggedIn = true;

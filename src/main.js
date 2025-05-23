@@ -2,6 +2,8 @@ import { createApp } from 'vue';
 import App from './App.vue';
 import router from './router';
 import utils from './components/js/utils.js'; // 공통함수 사용을 위해 this.$함수명(변수)
+import '@assets/tailwind.css'
+
 import store from './store';  // Vuex 스토어 임포트
 import { createPinia } from 'pinia';
 

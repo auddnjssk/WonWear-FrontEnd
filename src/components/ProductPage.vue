@@ -14,12 +14,12 @@
           <!-- <a>new 5%</a> -->
           <div class = "tripleImage"
             v-for = "items in itemsList"
-            :key="items.items_id"
-            @click="itemClick(items.items_id)">
+            :key="items.item_id"
+            @click="itemClick(items.item_id)">
             <div class = "exposeImagesCont">
               <img class="exposeImages" 
                 @error="handleImageError" 
-                :src="`http://localhost:8082/Chumbnail/${items.items_id}_1.png`"   
+                :src="`http://localhost:8082/Chumbnail/${items.item_id}_1.png`"   
                 alt="background" />
               <a>{{ items.item_name }}</a>
               <hr>
@@ -94,9 +94,6 @@
     const currentExt  = currentSrc.substring(currentSrc.lastIndexOf('.') + 1);
     const nextIndex   = extensions.indexOf(currentExt.toLowerCase()) + 1;
 
-    console.log("baseName",baseName);
-    console.log("currentExt",currentExt);
-
     if (nextIndex < extensions.length) {
       event.target.src = `${baseName}.${extensions[nextIndex]}`;
     } else {
@@ -113,6 +110,7 @@
   const fetchItems = async () => {
     const result = await utils.aSyncGetApi('/items', `main=${mainMenu}&sub=${subMenu}`);
     itemsList.value = result.result;
+    console.log("itemsList.value",itemsList.value);
   };
 
   // 목록 아이템 클릭 → 상세 페이지로 이동

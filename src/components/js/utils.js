@@ -100,6 +100,23 @@ async function  aSyncPostApi (requestUrl, values,action){
     this.showAlert('error',"에러발생!");
   }
 }
+
+async function  aSyncDeleteApi (requestUrl){
+      const response = await axios.delete('/api' + decodeURIComponent(requestUrl), {
+        headers:{
+          'Content-Type': 'application/json',
+          "Authorization": `Bearer ${localStorage.getItem('accessToken')}`,
+        },
+        withCredentials: true // 쿠키를 서버와 함께 전송하기 위해 사용
+      });
+      
+      if(response.data.statusCode == "3001"){
+        const authStore = useAuthStore();
+        this.showAlert('error',response.data.message);
+        authStore.clearAccessToken();
+      }
+
+}
 async function  aSyncPostFileApi (requestUrl, values){
 
   console.log("action",values);
@@ -302,7 +319,17 @@ const uploadImageToServer = async (blob,fileName,dir) => {
   }
 };
 
-export { aSyncGetApi , aSyncPostApi , getPrototypeOf ,dateFormmat, showAlert, removePopup,removeInputPopup ,deleteCookie ,isEmpty ,dataURLToBlob ,uploadImageToServer,showInputPop,deviceChk,aSyncPostFileApi};
+const formatPhoneNumber = (phoneNumber) => {
+  return phoneNumber.replace(/^(\d{3})(\d{4})(\d{4})$/, '$1-$2-$3')
+};
+
+const splitPhoneNumber = (phoneNumber) => {
+  const splPhoneNumber = formatPhoneNumber(phoneNumber);
+  const spl = splPhoneNumber.split('-');
+  return spl;
+}
+
+export { aSyncDeleteApi, splitPhoneNumber , formatPhoneNumber, aSyncGetApi , aSyncPostApi , getPrototypeOf ,dateFormmat, showAlert, removePopup,removeInputPopup ,deleteCookie ,isEmpty ,dataURLToBlob ,uploadImageToServer,showInputPop,deviceChk,aSyncPostFileApi};
 
 export default {
   uploadImageToServer,
@@ -318,5 +345,8 @@ export default {
   dataURLToBlob,
   showInputPop,
   deviceChk,
-  aSyncPostFileApi
+  aSyncPostFileApi,
+  splitPhoneNumber , 
+  formatPhoneNumber,
+  aSyncDeleteApi
 };

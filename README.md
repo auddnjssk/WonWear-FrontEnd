@@ -22,3 +22,6 @@ contents[currentIndex]?.image_url (옵셔널 체이닝)
 => obj가 undefined면 undefined 반환, 에러 없게끔 하기위함. 기존엔 에러를 뱉음,
 style="border-top: 1px solid #e6e6e6;"
     border-top: 1px solid #e6e6e6;
+
+
+css tailWind 사용

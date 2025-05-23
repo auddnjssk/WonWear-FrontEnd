@@ -219,6 +219,7 @@ watch([selectedColor, selectedSize], ([newColor, newSize]) => {
         quantity: selectedQuantity.value,
         items_detail_id1 : size.items_detail_id,
         items_detail_id2 : color.items_detail_id,
+        itemsId : itemsId,
       });
     }
   }
