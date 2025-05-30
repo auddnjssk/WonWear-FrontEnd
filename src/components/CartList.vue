@@ -32,7 +32,7 @@
                 <input type="checkbox" v-model="cartItem.checked" @change="toggleAll" />
               </td>
               <td class="border border-gray-300 p-2">
-                <img class="product-img w-20 h-20 object-cover" :src="cartItem.cartItem" alt="상품" />
+                <img class="product-img w-20 h-20 object-cover" :src="`http://localhost:8082/Chumbnail/${cartItem.item_id}_1.png`" alt="상품" />
               </td>
               <td class="border border-gray-300 p-2">
                 <div class="product-info">
@@ -72,9 +72,8 @@
         <tr>
           <th class="bg-gray-100 w-36 text-left p-3 border border-gray-300">배송지 선택</th>
           <td colspan="3" class="p-3 border border-gray-300">
-            <label class="mr-4"><input type="radio" name="addrType" /> 회원 정보와 동일</label>
-            <label class="mr-4"><input type="radio" name="addrType" /> 새로운 배송지</label>
-            <label class="mr-4"><input type="radio" name="addrType" checked /> 최근 배송지: 서명원</label>
+            <label class="mr-4"><input type="radio" name="addrType" value="new" v-model="selectedAddr"/> 새로운 배송지</label>
+            <label class="mr-4"><input type="radio" name="addrType" value="recent" v-model="selectedAddr" checked /> 최근 배송지: 서명원</label>
             <button
               class="border border-gray-300 px-4 py-2 rounded bg-gray-100 hover:bg-gray-200"
               @click="showModal = true"
@@ -156,13 +155,16 @@
           <th class="bg-gray-100 text-left p-3 border border-gray-300">이메일</th>
           <td colspan="3" class="p-3 border border-gray-300">
             <div class="flex items-center gap-2">
-              <input type="text" class="border border-gray-300 rounded px-2 py-1" />
+              <input v-model="email1" type="text" class="border border-gray-300 rounded px-2 py-1" />
               @
-              <input type="text" class="border border-gray-300 rounded px-2 py-1" />
-              <select class="border border-gray-300 rounded px-2 py-1">
+              <input :readonly="emailReadonly" v-model="email2" type="text" class="border border-gray-300 rounded px-2 py-1" />
+              <select
+                @change="mailChange" 
+                class="border border-gray-300 rounded px-2 py-1">
+                <option>naver.com</option>
                 <option>daum.net</option>
                 <option>gmail.com</option>
-                <option>naver.com</option>
+                <option>직접입력</option>
               </select>
             </div>
             <p class="text-gray-500 text-xs mt-2">
@@ -206,7 +208,7 @@
 
 <script setup>
   import '@assets/globStyles.css'
-  import { ref, onMounted } from 'vue';
+  import { ref, onMounted ,watch } from 'vue';
   import utils from '@js/utils.js';
   import AddressBookPop from '@pop/AddressBookPop.vue'
   import ModalCmp from '@common/ModalCmp.vue'
@@ -226,8 +228,13 @@
   const address1 = ref('');
   const address2 = ref('');
   const orderMessage = ref('');
-  
-  const showModal = ref(false)
+  const selectedAddr = ref('');
+  const showModal = ref(false);
+
+  const email1 = ref('');
+  const email2 = ref('naver.com');
+  const emailReadonly = ref(true); // 초기엔 readonly 상태
+
 
   /* global daum */
   const postCode = () => {
@@ -255,7 +262,6 @@
   };
 
   const allBuyButton = async() => {
-    console.log("buttonClick");
     const val = {
       cartList : cartList.value,
       postCodeVal : postCodeVal.value,
@@ -265,8 +271,7 @@
       receiverName : receiverName.value,
       orderMessage : orderMessage.value,
     }
-    const result = await utils.aSyncPostApi('/order',val);
-    console.log("result",result);
+     await utils.aSyncPostApi('/order',val);
     
   }
   const removeItem = async(index) => {
@@ -278,23 +283,36 @@
     fetchItems();
   }
 
+  
   const buyButton = async() => {
     console.log("buttonClick",cartList.value);
   }
+  const mailChange = async(event) => {
+    const changeVal = event.target.value;
+    if(changeVal ==='직접입력'){
+      email2.value= '';
+      emailReadonly.value = !emailReadonly.value;
+    }else{
+      emailReadonly.value = true;
+      email2.value=changeVal;
+    }
+  }
+
   function formatPrice(value) {
     return `${value.toLocaleString()}원`
   }
   // API 호출
   const fetchItems = async () => {
+
     const result = await utils.aSyncGetApi('/cart', ``);
-
-    cartList.value = result.result;
-    if(!utils.isEmpty(result.result)){
+    
+    if(result){
+      
+      cartList.value = result.result;
       itemSize.value = result.result.length;
-
+      console.log("cartList.value",cartList.value);
       for(const resultItem of result.result){
         totalPrice.value += resultItem.itemSalePrice;
-        console.log(totalPrice.value);
       }
       if(totalPrice.value < 80000) deliveryFee.value = 3000
     }
@@ -302,6 +320,47 @@
 
   onMounted(() => {
     fetchItems();
+    selectedAddr.value = 'recent';
+  });
+
+  watch(selectedAddr, async(newVal) => {
+    console.log('선택된 주소 유형:', newVal);
+
+    if(newVal == "new"){
+      console.log("new");
+      receiverPN1.value  = "010";
+      receiverPN2.value  = ""; 
+      receiverPN3.value  = "";
+      address1.value     = "";
+      address2.value     = "";
+      postCodeVal.value  = "";
+      receiverName.value = "";
+    }else{
+      const result = await utils.aSyncGetApi('/recentOrder', ``);
+      if(result.result){
+        const item = result.result[0];
+        const receiverPN = utils.splitPhoneNumber(item.receiver_phone);
+        receiverPN1.value  = receiverPN[0];
+        receiverPN2.value  = receiverPN[1];
+        receiverPN3.value  = receiverPN[2];
+        address1.value     = item.address1;
+        address2.value     = item.address2;
+        postCodeVal.value  = item.post_code;
+        receiverName.value = item.receiver_name;
+
+        if(item.email_address) {
+          const emailSplit = item.email_address.split('@');
+          console.log("emailSplit",emailSplit);
+          email1.value = emailSplit[0];
+          email2.value = emailSplit[1];
+
+        }
+        console.log("item.order_message",item.order_message);
+        if(item.order_message) {
+          orderMessage.value = item.order_message
+        }
+      }
+    }
   });
   
 </script>

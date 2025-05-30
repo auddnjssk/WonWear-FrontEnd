@@ -3,7 +3,9 @@ import AlertPop from '@components/Pop/AlertPop.vue';
 import inputPop from '@components/Pop/InputPop.vue'; 
 import { createApp } from 'vue';
 import { useAuthStore } from '@store/auth.js';
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
 let popupInstance      = null; // 현재 팝업 인스턴스를 저장
 let inputPopupInstance = null; // 현재 인풋 팝업 인스턴스를 저장
 
@@ -22,16 +24,25 @@ async function aSyncGetApi (requestUrl,values){
       },
     });
 
+    console.log("response",response);
     if(response.data.statusCode == "3001"){
       const authStore = useAuthStore();
       this.showAlert('error',response.data.message);
       authStore.clearAccessToken();
+      return;
     }
 
+    if(response.data.statusCode == "401"){
+      const authStore = useAuthStore();
+      this.showAlert('error',"로그인 만료 ! 재로그인 해주세요");
+      authStore.clearAccessToken();
+      router.push(`/login`);
+      return;
+    }
 
     return response.data; // 성공한 경우 데이터를 반환
   }catch(error){
-    this.showAlert('error',error.response.data);
+    this.showAlert('error',"통신에러 발생");
   }
 
 }
@@ -58,6 +69,17 @@ async function  aSyncPostApi (requestUrl, values,action){
         this.showAlert('error',response.data.message);
         authStore.clearAccessToken();
       }
+
+      
+    if(response.data.statusCode == "401"){
+      const authStore = useAuthStore();
+      this.showAlert('error',"로그인 만료 ! 재로그인 해주세요");
+      authStore.clearAccessToken();
+
+      router.push(`/login`);
+      return;
+
+    }
 
       return response.data; // 성공한 경우 데이터를 반환
     }
@@ -178,21 +200,25 @@ function dateFormmat(date){
 
 function showAlert(stat,message,callBack,cbArgument) {
 
-  // 동적으로 DOM 컨테이너 생성
-  const container = document.createElement('div');
+  console.log("팝업 Open",popupInstance)
 
-  document.body.appendChild(container);
-  
-  const app = createApp(AlertPop, 
-    { message , stat , removePopup , callBack , cbArgument}
-  );
+  if(!popupInstance){
+    // 동적으로 DOM 컨테이너 생성
+    const container = document.createElement('div');
 
-  popupInstance = {
-    app, 
-    AlertPop, 
-  };
-  // DOM에 마운트
-  app.mount(container);
+    document.body.appendChild(container);
+    
+    const app = createApp(AlertPop, 
+      { message , stat , removePopup , callBack , cbArgument}
+    );
+
+    popupInstance = {
+      app, 
+      AlertPop, 
+    };
+    // DOM에 마운트
+    app.mount(container);
+  }
 }
 
 /**
@@ -222,7 +248,9 @@ function showInputPop(message,placeholder,callBack,cbArgument) {
 }
 
 function removePopup(){
-console.log("removePopup",popupInstance);
+
+  console.log("removePopup",popupInstance);
+
   if (popupInstance) {
     const { app, container } = popupInstance;
 

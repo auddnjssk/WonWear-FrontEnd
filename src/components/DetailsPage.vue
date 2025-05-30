@@ -1,15 +1,16 @@
 <template>
-  <div class="ProductPage">
-    <div class="glb-contents">
-      <div class="chumbnail">
-        <div class = "chumbnail-content">
-          <div>
+  <div class="w-full">
+    <div class="px-4 py-8">
+      <div class="flex flex-col lg:flex-row gap-5">
+        <!-- 썸네일 업로드 섹션 -->
+        <div class="lg:w-1/2 w-full p-4">
+          <div class="relative">
             <input
               ref="fileInput"
               type="file"
               accept="image/*"
               @change="handleFileChange"
-              style="display: none;"
+              class="hidden"
             />
             <img class="exposeImages" 
                 style ="width: 100%;"
@@ -17,91 +18,177 @@
                 :src="mainImageSrc"   
                 alt="background" />
           </div>
-          <div class="fiveImage">
-            <div class="fiveImage-content">
-              <!-- 이미지가 있는 곳 -->
-              <div class="image-wrapper" v-for="(index) in image_number" :key="index">
-                <img class="image" 
-                  :src="`http://localhost:8082/Chumbnail/${itemsId}_${index}.png`"
-                  @click="fiveImageClick(index)"   
-                  alt="thumbnail" />
-              </div>
 
-              <!-- 이미지가 부족할 경우 빈 박스로 채움 -->
+          <div class="mt-4">
+            <div class="flex gap-2">
               <div
-                class="image-wrapper empty"
+                v-for="(chumbnail, index) in chumbnailList"
+                @click = "fiveImageClick(index)"
+                :key="index"
+                class="w-1/5 cursor-pointer"
+              >
+                <img
+                  @error="handleImageError"
+                  :src="chumbnail?.src"
+                  class="w-full rounded border"
+                  alt="thumbnail"
+                />
+              </div>
+              <div
                 v-for="n in 5 - image_number"
                 :key="'empty-' + n"
-              />             
+                
+                class="w-1/5 bg-gray-100 border rounded h-20"
+              ></div>
             </div>
-            <div class="pagination">
-              <button @click="prevPage" :disabled="currentPage === 1">Previous</button>
-              <button @click="nextPage" :disabled="currentPage === totalPages">Next</button>
+
+            <div class="mt-2 flex justify-between">
+              <button
+                @click="prevPage"
+                :disabled="currentPage === 1"
+                class="bg-gray-200 px-4 py-1 rounded"
+              >
+                Previous
+              </button>
+              <button
+                @click="nextPage"
+                :disabled="currentPage === totalPages"
+                class="bg-gray-200 px-4 py-1 rounded"
+              >
+                Next
+              </button>
             </div>
           </div>
-
         </div>
-        <div class="chumbnail-content">
-          <a>{{ itemName }}</a>
-          <hr>
-          <a>소비자가 &ensp;: {{ itemPriceFomt }}</a>
-          <hr>
-          <a>판매가 &ensp;&ensp;&ensp;: {{ itemPriceFomt }}</a>
-          <hr style="width:100%">
-          <a>색상 &ensp;&ensp;&ensp;&ensp;&ensp;: </a>
-          <select v-model="selectedColor">
-            <option disabled value="">색상을 선택하세요</option>
-            <option v-for="color in itemColor" :key="color.item_detail" :value="color.item_detail">
-              {{ color.item_detail }}
-            </option>
-          </select>
-          <br>
-          <hr style="width:100%">
-          <a>사이즈 &ensp;&ensp;&ensp;: </a>
-          <select v-model="selectedSize">
-            <option disabled value="">사이즈를 선택하세요</option>
-            <option v-for="size in itemSize" :key="size.item_detail" :value="size.item_detail">
-              {{ size.item_detail }}
-            </option>
-          </select>
-          <br>
-          <hr style="width:100%">
 
-          <a>(최소주문수량 1개 이상)</a> <br>
-          <a>위 옵션선택 박스를 선택하시면 아래에 상품이 추가됩니다.</a>
-          <hr>
+        <!-- 상품 정보 입력 섹션 -->
+        <div class="lg:w-1/2 w-full p-4 border-t-2 lg:border-t-0 lg:border-l-2 border-gray-600">
+          <div class="font-bold py-4">
+            <span>상품이름 :</span>
+            <a type="text"
+              class="w-full mt-2 px-3 py-2 text-sm border rounded focus:ring focus:ring-blue-200 focus:border-blue-400" >
+              {{  itemName }}
+            </a>
+          </div>
 
-          <div class="quantity-div" v-for="(selectItem, index) in selectedItem" :key="index">
-            <div class="quantity-title">
-              <a>{{ itemName }}</a><br>
-              <a>{{ selectItem.color }} - {{ selectItem.size }}</a>
-            </div>
-            <div class="quantity">
-              <input type="number" v-model.number="selectItem.quantity" :key="index" min="1" style="width: 60px; margin: 5px;"/>
-              <button @click="removeItem(index)" style="background: #ccc; border: none; padding: 4px 8px; cursor: pointer;">X</button>
+          <div class="border-t pt-4">
+            <div class="space-y-3">
+              <div>
+                <span>소비자가 :</span>
+                <a
+                  type="text"
+                  class="ml-2 px-3 py-2 text-sm border rounded focus:ring focus:ring-blue-200 focus:border-blue-400"
+                >
+                {{ itemPriceFomt }}
+              </a>
+              </div>
+              <div>
+                <span>판매가 :</span>
+                <a
+                  type="text"
+                  class="ml-2 px-3 py-2 text-sm border rounded focus:ring focus:ring-blue-200 focus:border-blue-400"
+                >
+                {{ itemSalePriceFomt }}
+                </a>
+              </div>
+
+              <div>
+                <span>색상 :</span>
+                <select
+                  v-model="selectedColor"
+                  class="ml-2 px-3 py-2 text-sm border rounded focus:ring focus:ring-blue-200 focus:border-blue-400"
+                >
+                  <option disabled value="">색상을 선택하세요</option>
+                  <option
+                    v-for="color in itemColor"
+                    :key="color"
+                    :value="color.item_detail"
+                  >
+                    {{ color.item_detail }}
+                  </option>
+                </select>
+              </div>
+
+              <div>
+                <span>사이즈 :</span>
+                <select
+                  v-model="selectedSize"
+                  class="ml-2 px-3 py-2 text-sm border rounded focus:ring focus:ring-blue-200 focus:border-blue-400"
+                >
+                  <option disabled value="">사이즈를 선택하세요</option>
+                  <option
+                    v-for="size in itemSize"
+                    :key="size"
+                    :value="size.item_detail"
+                  >
+                    {{ size.item_detail }}
+                  </option>
+                </select>
+              </div>
             </div>
           </div>
 
-          <hr>
-          <a style="margin: 10px;">TOTAL : {{ totalPrice }}</a>
+          <div class="border-t py-4 text-sm text-gray-600">
+            <p>(최소주문수량 1개 이상)</p>
+            <p>위 옵션선택 박스를 선택하시면 아래에 상품이 추가됩니다.</p>
+          </div>
 
-          <div>
-            <div class="Buy-Button-Div">
-              <button class="Buy-Button" style="width:100%; background: #333; color:white" @click="buyButton">BUY IT NOW</button>
+          <!-- 옵션 선택 항목 -->
+          <div
+            v-for="(selectItem, index) in selectedItem"
+            :key="index"
+            class="flex justify-between items-center border-b py-2"
+          >
+            <div>
+              <p class="font-semibold">{{ itemName }}</p>
+              <p>{{ selectItem.color }} - {{ selectItem.size }}</p>
             </div>
-            <div class="Buy-Button-Div">
-              <button @click = "addCart" class="Buy-Button">ADD TO CART</button>
-              <button @click = "addWishList" class="Buy-Button">WISH LIST</button>
+            <div class="flex items-center gap-2">
+              <input
+                type="number"
+                v-model.number="selectItem.quantity"
+                min="1"
+                class="w-16 border rounded px-2 py-1"
+              />
+              <button
+                @click="removeItem(index)"
+                class="bg-gray-300 px-2 rounded"
+              >
+                X
+              </button>
+            </div>
+          </div>
+
+          <div class="my-4 text-right font-bold">TOTAL: {{ totalPrice }}</div>
+          <div class="w-full max-w-sm mx-auto space-y-2">
+            <!-- BUY IT NOW 버튼 -->
+            <button @click="saveButton" class="w-full bg-gray-800 text-white font-semibold py-3 text-sm hover:bg-gray-700 transition">
+              BUY IT NOW
+            </button>
+
+            <!-- ADD TO CART & WISH LIST 버튼 그룹 -->
+            <div class="flex w-full">
+              <button @click="addCart" class="w-1/2 border text-sm py-3 font-semibold text-gray-700 hover:bg-gray-100">
+                ADD TO CART
+              </button>
+              <button class="w-1/2 border border-l-0 text-sm py-3 font-semibold text-gray-700 hover:bg-gray-100">
+                WISH LIST
+              </button>
             </div>
           </div>
         </div>
       </div>
 
-      <hr>
-
-      <div>
-        <a>PRODUCT DETAIL</a>
-        <img style="width: 100%;" class="exposeImages" v-for="itemImage in itemsList" :key="itemImage.key" :src="itemImage.src" alt="background" />
+      <!-- 상세 이미지 -->
+      <div class="border-t mt-8 pt-4">
+        <h3 class="text-lg font-semibold mb-4">PRODUCT DETAIL</h3>
+        <img
+          v-for="itemImage in itemsList"
+          :key="itemImage.key"
+          :src="itemImage.src"
+          class="w-full mb-2 rounded"
+          alt="detail"
+        />
       </div>
     </div>
   </div>
@@ -119,10 +206,14 @@ const image_number = ref('');
 const itemsId = route.params.itemsId;
 const itemName = ref('');
 const itemPrice = ref(0);
-const itemPriceFomt = ref('');
+const itemSalePrice = ref(0);
+const itemPriceFomt = ref(0);
+const itemSalePriceFomt = ref(0);
 const itemSize = ref([]);
 const itemColor = ref([]);
 const itemsList = ref([]);
+
+const chumbnailList = ref([]);
 
 const selectedQuantity = ref('1');
 const selectedColor    = ref('');
@@ -151,13 +242,17 @@ const fetchItems = async () => {
   itemName.value      = data.item_name;
   itemPrice.value     = data.item_price;
   itemPriceFomt.value = itemPrice.value.toLocaleString();
+  itemSalePrice.value = data.item_salePrice;
+  itemSalePriceFomt.value = itemSalePrice.value.toLocaleString();
   itemSize.value      = data.items_size;
   itemColor.value     = data.items_color;
   image_number.value  = data.image_number;
 
   for (let i = 1; i <= data.image_number; i++) {
-    itemsList.value.push({ key: i, src: `http://localhost:8082/ItemDetails/${itemsId}_${i}.jpg` });
+    chumbnailList.value.push({ key: i, src: `http://localhost:8082/Chumbnail/${itemsId}_${i}.jpg` });
   }
+
+  console.log("chumbnailList.value",chumbnailList.value)
 };
 
 const handleImageError = (event) => {
@@ -172,12 +267,12 @@ const handleImageError = (event) => {
     event.target.src = 'http://localhost:8082/Chumbnail/default.png';
   }
 };
+
 const fiveImageClick = (index) => { 
+  const imageIndex = index+1;
+  mainImageSrc.value = 'http://localhost:8082/Chumbnail/'+itemsId+'_'+imageIndex+'.png';
+  console.log("index",mainImageSrc.value);
 
-  mainImageSrc.value = 'http://localhost:8082/Chumbnail/'+itemsId+'_'+index+'.png';
-
-
-  console.log(index);
 };
 
 const addCart = async() => {
@@ -194,14 +289,8 @@ const addCart = async() => {
     console.log("result",result);
 
   }else{ // 로그인 상태가 아니라면 세션스토리지에 저장
-    console.log("로그아웃");
-
+    sessionStorage.setItem('guestCart', JSON.stringify(selectedItem.value));
   }
-  
-};
-const addWishList = async() => {
-  console.log("selectItem",selectedItem.value);
-  
   
 };
 
@@ -237,9 +326,9 @@ const removeItem = (index) => {
   selectedItem.value.splice(index, 1);
 };
 
-const buyButton = () => {
-  console.log("구매 상품:", selectedItem.value);
-};
+// const buyButton = () => {
+//   console.log("구매 상품:", selectedItem.value);
+// };
 
 
 watch(() => authStore.accessToken, (newToken) => {
@@ -276,88 +365,3 @@ onMounted(() => {
   accessTokenChk();
 });
 </script>
-
-<style scoped>
-.chumbnail {
-  display: flex;
-  gap: 20px;
-  width: 100%;
-}
-.chumbnail-content {
-  flex: 1; /* 각각 50% */
-  padding: 20px;
-  box-sizing: border-box;
-}
-.fiveImage {
-  width: 100%;
-  overflow: hidden;
-}
-
-.fiveImage-content {
-  display: flex;
-  justify-content: space-between;
-  width: 100%;
-}
-
-.image-wrapper {
-  flex: 1; /* 5개면 1씩 균등 분할 */
-  padding: 5px; /* 이미지 사이 여백 */
-  box-sizing: border-box;
-}
-
-.image {
-  width: 100%;
-  height: auto;
-  object-fit: contain;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: transform 0.2s;
-}
-
-.image:hover {
-  transform: scale(1.05);
-  border-color: #333;
-}
-
-
-
-.Buy-Button-Div {
-  padding : 2px;
-  display: flex;
-  box-sizing: border-box;
-}
-
-.Buy-Button-Div .Buy-Button{
-  height : 40px;
-  flex: 1; /* 각각 50% */
-  box-sizing: border-box;
-}
-.quantity-div{
-  display: flex;
-  width: 100%;
-}
-.quantity-div .quantity-title{
-  flex: 7; /* 각각 50% */
-}
-.quantity-div .quantity{
-  flex: 3; /* 각각 50% */
-}
-
-
-.input {
-  padding: 2px 12px;
-  font-size: 14px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  transition: border-color 0.3s, box-shadow 0.3s;
-  outline: none;
-}
-
-.input-wrapper input:focus {
-  border-color: #409eff;
-  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
-}
-
-
-</style>

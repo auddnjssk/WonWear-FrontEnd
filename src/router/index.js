@@ -8,7 +8,7 @@ import ProductPage           from '@components/ProductPage.vue';
 import DetailsPage           from '@components/DetailsPage.vue';
 import LoginMain             from '@components/LoginMain.vue';
 import UserEdit              from '@components/UserEdit.vue';
-import MenuEdit              from '@components/MenuEdit.vue';
+import CategoryEdit          from '@components/CategoryEdit.vue';
 import MyPage                from '@components/MyPage.vue';
 import AddItem               from '@components/AddItem.vue';
 import CartList              from '@components/CartList.vue';
@@ -22,7 +22,7 @@ const routes = [
     component: MainPage,
   },
   {
-    path: '/productPage/:main/:sub',
+    path: '/productPage/:cateNo',
     name: 'productPage',
     component: ProductPage,
   },
@@ -47,9 +47,9 @@ const routes = [
     component: MyPage,
   },
   {
-    path: '/menuEdit',
-    name: 'MenuEdit',
-    component: MenuEdit,
+    path: '/categoryEdit',
+    name: 'CategoryEdit',
+    component: CategoryEdit,
   },
   {
     path: '/login',
