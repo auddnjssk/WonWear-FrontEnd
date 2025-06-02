@@ -25,3 +25,8 @@ style="border-top: 1px solid #e6e6e6;"
 
 
 css tailWind 사용
+
+
+
+localStorage.getItem('meinMenu');
+localStorage.getItem('subMenu');

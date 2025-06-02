@@ -52,6 +52,7 @@
     </div>
   </header>
 </template>
+
 <script setup>
 import { ref, onMounted, onUnmounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
@@ -106,7 +107,10 @@ const menuClick = async (cateNo) => {
 
 const logoClick      = () => router.push('/');
 const loginClick     = () => router.push('/login');
-const logoutClick    = () => authStore.clearAccessToken();
+const logoutClick    = () => {
+  router.push('/');
+  authStore.clearAccessToken();
+}
 const userEditClick  = () => router.push('/userEdit');
 const myPageClick    = () => router.push('/myPage');
 const menuEditClick  = () => router.push('/categoryEdit');

@@ -230,12 +230,12 @@
   const orderMessage = ref('');
   const selectedAddr = ref('');
   const showModal = ref(false);
-
   const email1 = ref('');
   const email2 = ref('naver.com');
   const emailReadonly = ref(true); // 초기엔 readonly 상태
-
-
+  
+  const accessToken = localStorage.getItem('accessToken');
+  
   /* global daum */
   const postCode = () => {
     new daum.Postcode({
@@ -304,18 +304,19 @@
   // API 호출
   const fetchItems = async () => {
 
-    const result = await utils.aSyncGetApi('/cart', ``);
-    
-    if(result){
-      
+    if(accessToken != null ){
+      console.log("ifif");
+      const result = await utils.aSyncGetApi('/cart', ``);
+      if(result){
       cartList.value = result.result;
       itemSize.value = result.result.length;
-      console.log("cartList.value",cartList.value);
       for(const resultItem of result.result){
         totalPrice.value += resultItem.itemSalePrice;
       }
       if(totalPrice.value < 80000) deliveryFee.value = 3000
+      }
     }
+    
   };
 
   onMounted(() => {
@@ -324,10 +325,8 @@
   });
 
   watch(selectedAddr, async(newVal) => {
-    console.log('선택된 주소 유형:', newVal);
 
     if(newVal == "new"){
-      console.log("new");
       receiverPN1.value  = "010";
       receiverPN2.value  = ""; 
       receiverPN3.value  = "";
@@ -335,9 +334,10 @@
       address2.value     = "";
       postCodeVal.value  = "";
       receiverName.value = "";
-    }else{
+    }else if(accessToken != null){
+      // 엑세스토큰이 없으면 최근배송지 x
       const result = await utils.aSyncGetApi('/recentOrder', ``);
-      if(result.result){
+      if(result?.result){
         const item = result.result[0];
         const receiverPN = utils.splitPhoneNumber(item.receiver_phone);
         receiverPN1.value  = receiverPN[0];

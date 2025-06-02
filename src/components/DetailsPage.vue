@@ -179,17 +179,35 @@
         </div>
       </div>
 
-      <!-- 상세 이미지 -->
-      <div class="border-t mt-8 pt-4">
-        <h3 class="text-lg font-semibold mb-4">PRODUCT DETAIL</h3>
-        <img
-          v-for="itemImage in itemsList"
-          :key="itemImage.key"
-          :src="itemImage.src"
-          class="w-full mb-2 rounded"
-          alt="detail"
-        />
+
+      <div class="border-t border-gray-200 mt-10">
+        <nav class="flex justify-center space-x-8 text-sm font-medium text-gray-500">
+          <button
+            @click="detailFlag = 'detail'"
+            :class="detailFlag === 'detail' ? 'py-4 font-bold text-black border-b-2 border-black' : 'py-4 text-gray-400 hover:text-black'"
+          >PRODUCT DETAIL</button>
+          <button
+            @click="detailFlag = 'review'"
+            :class="detailFlag === 'review' ? 'py-4 font-bold text-black border-b-2 border-black relative' : 'py-4 text-gray-400 hover:text-black relative'"
+          >
+            REVIEW
+            <span class="absolute top-1 -right-4 text-xs bg-gray-300 text-white rounded-full px-1">1</span>
+          </button>
+          <button
+            @click="detailFlag = 'qna'"
+            :class="detailFlag === 'qna' ? 'py-4 font-bold text-black border-b-2 border-black relative' : 'py-4 text-gray-400 hover:text-black relative'"
+          >
+            Q&A
+            <span class="absolute top-1 -right-4 text-xs bg-gray-300 text-white rounded-full px-1">0</span>
+          </button>
+          <button
+            @click="detailFlag = 'withitem'"
+            :class="detailFlag === 'withitem' ? 'py-4 font-bold text-black border-b-2 border-black' : 'py-4 text-gray-400 hover:text-black'"
+          >WITH ITEM</button>
+        </nav>
       </div>
+      <ProductDetail :detailImageSize="detailImageSize" :itemsId="itemsId"/>
+      <!-- 상세 이미지 -->
     </div>
   </div>
 </template>
@@ -199,6 +217,7 @@ import { ref, watch, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import utils from '@js/utils.js';
 import { useAuthStore } from '@store/auth.js';
+import ProductDetail  from '@components/DetailPageComp/ProductDetail.vue';
 import { useRouter } from 'vue-router'; // useRouter 훅 임포트
 
 const route = useRoute();
@@ -211,7 +230,10 @@ const itemPriceFomt = ref(0);
 const itemSalePriceFomt = ref(0);
 const itemSize = ref([]);
 const itemColor = ref([]);
-const itemsList = ref([]);
+
+const detailFlag = ref('detail');
+
+const detailImageSize = ref(0);
 
 const chumbnailList = ref([]);
 
@@ -239,20 +261,22 @@ const fetchItems = async () => {
   const result = await utils.aSyncGetApi('/itemDetail', `itemsId=${itemsId}`);
   console.log("result",result);
   const data = result.result[0];
-  itemName.value      = data.item_name;
-  itemPrice.value     = data.item_price;
-  itemPriceFomt.value = itemPrice.value.toLocaleString();
-  itemSalePrice.value = data.item_salePrice;
+  itemName.value          = data.item_name;
+  itemPrice.value         = data.item_price;
+  itemPriceFomt.value     = itemPrice.value.toLocaleString();
+  itemSalePrice.value     = data.item_salePrice;
   itemSalePriceFomt.value = itemSalePrice.value.toLocaleString();
-  itemSize.value      = data.items_size;
-  itemColor.value     = data.items_color;
-  image_number.value  = data.image_number;
+  itemSize.value          = data.items_size;
+  itemColor.value         = data.items_color;
+  image_number.value      = data.image_number;
+  detailImageSize.value   = data.detailImageSize;
 
   for (let i = 1; i <= data.image_number; i++) {
     chumbnailList.value.push({ key: i, src: `http://localhost:8082/Chumbnail/${itemsId}_${i}.jpg` });
   }
 
-  console.log("chumbnailList.value",chumbnailList.value)
+
+  console.log("detailImageList.value",detailImageSize.value);
 };
 
 const handleImageError = (event) => {
@@ -312,6 +336,9 @@ watch([selectedColor, selectedSize], ([newColor, newSize]) => {
       });
     }
   }
+});
+watch([detailFlag], ([newVal]) => {
+    console.log("newVal",newVal);
 });
 
 watch(selectedItem, (newItems) => {

@@ -27,7 +27,7 @@ const routes = [
     component: ProductPage,
   },
   {
-    path: '/addItem/:main/:sub',
+    path: '/addItem/:cateNo',
     name: 'addItem',
     component: AddItem,
   },

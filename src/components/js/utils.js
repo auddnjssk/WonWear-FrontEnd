@@ -102,12 +102,15 @@ async function  aSyncPostApi (requestUrl, values,action){
     }
 
     if(action == "delete"){
-      const response = await axios.delete('/api' + decodeURIComponent(requestUrl), values, {
-        headers:{
+      console.log("deelte!!");
+      const response = await axios.delete('/api' + decodeURIComponent(requestUrl), {
+        data: values,
+        headers: {
           'Content-Type': 'application/json',
         },
-        withCredentials: true // 쿠키를 서버와 함께 전송하기 위해 사용
+        withCredentials: true
       });
+
       
       if(response.data.statusCode == "3001"){
         const authStore = useAuthStore();

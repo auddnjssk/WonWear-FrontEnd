@@ -107,8 +107,7 @@ import utils from '@js/utils.js'
   // const itemsPerPage = 5;
 
   const route = useRoute();
-  const mainMenu = route.params.main;
-  const subMenu = route.params.sub;
+  const cateNo = route.params.cateNo;
 
 
   const selectedSize  = ref("");
@@ -225,8 +224,7 @@ import utils from '@js/utils.js'
       salePrice     : salePrice.value,
       itemColor     : itemColor.value,
       itemSize      : itemSize.value,
-      mainMenu      : mainMenu,
-      subMenu       : subMenu,
+      cateNo      : cateNo,
 
     }
     const valChkResult = valChk(val);
@@ -243,12 +241,10 @@ import utils from '@js/utils.js'
         utils.showAlert("alert","정상처리 되었습니다.");
         console.log(result.result);
 
-        const items_id = result.result[0].items_id;
-
-        console.log("chumbnailList.value[i]",items_id);
+        const item_id = result.result[0].item_id;
 
         for(let i = 0 ; i < chumbnailList.value.length ; i++){
-          utils.uploadImageToServer(chumbnailList.value[i].file,items_id+"_"+(i+1),"Chumbnail");
+          utils.uploadImageToServer(chumbnailList.value[i].file,item_id+"_"+(i+1),"Chumbnail");
         }
 
         
